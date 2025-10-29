@@ -1,6 +1,9 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type CSSProperties, type FormEvent } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type FormEvent } from 'react';
+import { useRouter } from 'next/navigation';
+
+import { API_BASE } from '@/lib/env';
 
 const PLACEHOLDER = 'Ask VibeAny to create a blog about...';
 const DEFAULT_PROMPT = 'Create a high-converting AI storefront for electric bikes';
@@ -16,33 +19,128 @@ const formStyle: CSSProperties = {
   fontFamily: 'Inter, "Helvetica Neue", Helvetica, Arial, sans-serif',
 };
 
+const fetchWithCredentials = (input: RequestInfo | URL, init: RequestInit = {}) => {
+  const finalInit: RequestInit = {
+    ...init,
+    credentials: init.credentials ?? 'include',
+  };
+  return fetch(input, finalInit);
+};
+
 export function LandingPromptForm() {
   const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
   const trimmedPrompt = useMemo(() => prompt.trim(), [prompt]);
+  const router = useRouter();
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const isSubmittingRef = useRef(false);
+  const isMountedRef = useRef(true);
+
+  useEffect(() => {
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, []);
 
   const navigateToVibeAny = useCallback(
-    (value?: string) => {
+    async (value?: string) => {
       const targetValue = (value ?? trimmedPrompt).trim();
+      if (!targetValue) {
+        return;
+      }
+
+      if (isSubmittingRef.current) {
+        return;
+      }
+
+      isSubmittingRef.current = true;
+      setIsSubmitting(true);
+
+      let assistant = 'codex';
+      let model = 'gpt-5';
 
       try {
         if (typeof window !== 'undefined' && window.sessionStorage) {
-          if (targetValue) {
-            window.sessionStorage.setItem('vibeany:landingPrompt', targetValue);
-            window.sessionStorage.setItem('vibeany:autoSubmit', 'true');
-          } else {
-            window.sessionStorage.removeItem('vibeany:landingPrompt');
-            window.sessionStorage.removeItem('vibeany:autoSubmit');
-          }
+          const storedAssistant = window.sessionStorage.getItem('selectedAssistant');
+          const storedModel = window.sessionStorage.getItem('selectedModel');
+          if (storedAssistant) assistant = storedAssistant;
+          if (storedModel) model = storedModel;
+
+          window.sessionStorage.setItem('vibeany:landingPrompt', targetValue);
+          window.sessionStorage.removeItem('vibeany:autoSubmit');
+          window.sessionStorage.setItem('selectedAssistant', assistant);
+          window.sessionStorage.setItem('selectedModel', model);
+          window.sessionStorage.setItem('navigationFlag', 'true');
         }
       } catch (error) {
         console.warn('Failed to persist landing prompt for VibeAny navigation', error);
       }
 
-      if (typeof window !== 'undefined') {
-        window.location.href = '/vibeany';
-      }
+      const projectId = `project-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const params = new URLSearchParams();
+      if (assistant) params.set('cli', assistant);
+      if (model) params.set('model', model);
+      const targetUrl = `/${projectId}/chat${params.toString() ? `?${params.toString()}` : ''}`;
+
+      router.push(targetUrl);
+
+      const createProject = async () => {
+        try {
+          const response = await fetchWithCredentials(`${API_BASE}/api/projects`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              project_id: projectId,
+              name: targetValue.slice(0, 50) + (targetValue.length > 50 ? '...' : ''),
+              initial_prompt: targetValue,
+              preferred_cli: assistant,
+              selected_model: model,
+            }),
+          });
+
+          if (!response.ok) {
+            if (response.status === 401 || response.status === 403) {
+              router.replace('/login');
+            } else {
+              const detail = await response.text().catch(() => response.statusText);
+              console.error('Failed to create project from landing:', detail);
+              router.replace('/vibeany');
+            }
+            return;
+          }
+
+          try {
+            const actResponse = await fetchWithCredentials(`${API_BASE}/api/chat/${projectId}/act`, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                instruction: targetValue,
+                images: [],
+                is_initial_prompt: true,
+                cli_preference: assistant,
+              }),
+            });
+
+            if (!actResponse.ok) {
+              const detail = await actResponse.text().catch(() => actResponse.statusText);
+              console.error('Failed to trigger initial ACT request from landing:', detail);
+            }
+          } catch (error) {
+            console.error('Failed to trigger project generation from landing:', error);
+          }
+        } catch (error) {
+          console.error('Failed to create project from landing:', error);
+          router.replace('/vibeany');
+        } finally {
+          isSubmittingRef.current = false;
+          if (isMountedRef.current) {
+            setIsSubmitting(false);
+          }
+        }
+      };
+
+      void createProject();
     },
-    [trimmedPrompt],
+    [router, trimmedPrompt],
   );
 
   useEffect(() => {
@@ -65,14 +163,16 @@ export function LandingPromptForm() {
       return;
     }
     const vibeanyGlobal = (window as any).VibeAny ?? {};
-    vibeanyGlobal.navigateToExperience = (value?: string) => navigateToVibeAny(value);
+    vibeanyGlobal.navigateToExperience = (value?: string) => {
+      void navigateToVibeAny(value);
+    };
     (window as any).VibeAny = vibeanyGlobal;
   }, [navigateToVibeAny]);
 
   const handleSubmit = useCallback(
     (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      navigateToVibeAny();
+      void navigateToVibeAny();
     },
     [navigateToVibeAny],
   );
@@ -91,6 +191,7 @@ export function LandingPromptForm() {
           style={{ minHeight: '120px' }}
           value={prompt}
           onChange={(event) => setPrompt(event.target.value)}
+          disabled={isSubmitting}
         />
       </div>
       <div className="flex flex-wrap items-center gap-1">
@@ -109,14 +210,18 @@ export function LandingPromptForm() {
           >
             <button
               type="button"
+              disabled={isSubmitting}
               className="DPAltb style-mcf1u9kf3__root wixui-button wixui-search-button search-button"
               data-testid="buttonContent"
               aria-label="Search"
-              onClick={() => navigateToVibeAny()}
+              aria-disabled={isSubmitting}
+              onClick={() => {
+                void navigateToVibeAny();
+              }}
             >
               <span className="wpLgnL">
                 <span className="gIbEBg wixui-button__label" data-testid="stylablebutton-label">
-                  Start Now
+                  {isSubmitting ? 'Starting...' : 'Start Now'}
                 </span>
                 <span className="HvvH6i wixui-button__icon" aria-hidden="true" data-testid="stylablebutton-icon">
                   <span>
