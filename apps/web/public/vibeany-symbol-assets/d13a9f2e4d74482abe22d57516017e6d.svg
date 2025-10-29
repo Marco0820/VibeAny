@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;">
+    <g transform="matrix(0.126451,0,0,0.126451,-4.39699,-1.44727)">
+        <clipPath id="_clip1">
+            <path d="M113.854,28.942C109.489,28.942 105.946,25.398 105.946,21.034C105.946,16.669 109.489,13.125 113.854,13.125C156.573,13.125 191.256,47.808 191.256,90.527C191.256,133.246 156.573,167.929 113.854,167.929C71.135,167.929 36.452,133.246 36.452,90.527C36.452,67.554 46.481,46.903 62.398,32.723C65.657,29.82 70.66,30.108 73.563,33.367C76.467,36.626 76.178,41.629 72.919,44.533C60.253,55.816 52.269,72.246 52.269,90.527C52.269,124.517 79.864,152.112 113.854,152.112C147.844,152.112 175.439,124.517 175.439,90.527C175.439,56.537 147.844,28.942 113.854,28.942Z"/>
+        </clipPath>
+        <g clip-path="url(#_clip1)">
+            <g transform="matrix(7.90818,-0,-0,7.90818,34.7722,11.4453)">
+                <use xlink:href="#_Image2" x="0.212" y="0.212" width="20px" height="20px"/>
+            </g>
+        </g>
+    </g>
+    <defs>
+        <image id="_Image2" width="20px" height="20px" xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAYAAACNiR0NAAAACXBIWXMAAA7EAAAOxAGVKw4bAAABAklEQVQ4jc2UPW/CMBRFTxwTDJRSVWLo3pmVn9DfzsrcpWsZCkI0BVrRofeplvkILh240pWjSD46zktS1JPRjiid8bQgST0ZFYDVqWVSD5Qu3dyQFJqC/R4wNW6AxnYe8P4CwxjWsvXgkY9YHoK11ApoA9XRZ3gCalaVGgQLQMg5cgwzQNvMzPbklBNLp00B6AI94CZtjqEHOsAt0BfULG0ozVOWpZPBA3Cv68DPUe2VKQF3rqEHnoC7COL4nbx9XcW5wI3WZ+AFmAO17n8CX+ou98V+VGfAK7AA3oEPwbe5QMtQXQBvwFLg9V+BloG6VFeXAi19dZX7+2pK77+BXD/wG+qSMLH8SBDrAAAAAElFTkSuQmCC"/>
+    </defs>
+</svg>

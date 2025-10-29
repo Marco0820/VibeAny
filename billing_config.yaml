@@ -1,0 +1,23 @@
+# Billing configuration overrides for the rebuilt points & billing system
+version: 1
+auto_fix_daily_limit: 3
+default_usage_bonus: 0.2
+free_daily_bc: 1
+payg_default_enabled: true
+scale_plan_price: 225
+trial_days_default: 1
+shared_modes:
+  free: shared_pool
+  pro: shared_pool
+  scale: hybrid
+  enterprise: hybrid
+allowance_defaults:
+  bc:
+    window: monthly
+    rollover_policy: 1_cycle
+  rc:
+    window: monthly
+    rollover_policy: 1_cycle
+  usage:
+    window: monthly
+    rollover_policy: none

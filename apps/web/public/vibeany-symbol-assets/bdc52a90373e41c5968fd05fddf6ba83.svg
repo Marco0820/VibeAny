@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-linejoin:round;">
+    <rect x="0" y="0" width="24" height="24" style="fill:none;fill-rule:nonzero;"/>
+    <path d="M6.306,8.711C3.704,9.434 2,10.637 2,12C2,14.21 6.477,16 12,16C12.773,16 13.526,15.965 14.248,15.898" style="fill:none;fill-rule:nonzero;stroke:rgb(172,126,244);stroke-width:2px;"/>
+    <path d="M17.692,15.289C20.295,14.567 22,13.363 22,12C22,9.79 17.523,8 12,8C11.227,8 10.474,8.035 9.75,8.102" style="fill:none;fill-rule:nonzero;stroke:rgb(172,126,244);stroke-width:2px;"/>
+    <path d="M6.305,15.287C5.629,17.902 5.82,19.98 7,20.66C8.913,21.765 12.703,18.783 15.464,14C15.851,13.33 16.197,12.661 16.5,12" style="fill:none;fill-rule:nonzero;stroke:rgb(172,126,244);stroke-width:2px;"/>
+    <path d="M17.694,8.716C18.371,6.1 18.181,4.02 17,3.34C15.087,2.235 11.297,5.217 8.536,10C8.149,10.67 7.803,11.34 7.499,12" style="fill:none;fill-rule:nonzero;stroke:rgb(172,126,244);stroke-width:2px;"/>
+    <path d="M12,5.424C10.075,3.532 8.18,2.658 7,3.34C5.087,4.444 5.774,9.217 8.536,14C8.922,14.67 9.329,15.304 9.748,15.896" style="fill:none;fill-rule:nonzero;stroke:rgb(172,126,244);stroke-width:2px;"/>
+    <path d="M12,18.574C13.926,20.467 15.821,21.342 17,20.66C18.913,19.556 18.226,14.783 15.464,10C15.089,9.35 14.684,8.717 14.252,8.103" style="fill:none;fill-rule:nonzero;stroke:rgb(172,126,244);stroke-width:2px;"/>
+    <path d="M11.5,12.866C11.653,12.956 11.828,13.003 12.006,13.003C12.554,13.003 13.006,12.552 13.006,12.003C13.006,11.644 12.812,11.312 12.5,11.134C12.349,11.048 12.179,11.003 12.006,11.003C11.457,11.003 11.006,11.455 11.006,12.003C11.006,12.358 11.194,12.687 11.5,12.866Z" style="fill:none;fill-rule:nonzero;stroke:rgb(172,126,244);stroke-width:2px;"/>
+</svg>

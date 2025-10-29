@@ -1,0 +1,46 @@
+{
+  "name": "vibeany-web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node scripts/dev.js",
+    "dev:no-open": "next dev --turbo",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "@radix-ui/react-accordion": "^1.2.2",
+    "@radix-ui/react-slot": "^1.0.3",
+    "@builder.io/react": "^8.2.7",
+    "@builder.io/sdk": "^6.1.2",
+    "@builder.io/widgets": "^2.0.3",
+    "@emotion/react": "^11.14.0",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "2.1.1",
+    "critters": "^0.0.23",
+    "dedent": "^1.7.0",
+    "framer-motion": "11.3.31",
+    "highlight.js": "11.9.0",
+    "lucide-react": "^0.540.0",
+    "next": "^14.2.33",
+    "open": "^10.2.0",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "react-markdown": "^10.1.0",
+    "react-syntax-highlighter": "^15.6.1",
+    "tailwind-merge": "^2.5.4",
+    "use-typed-event-listener": "^4.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "24.2.1",
+    "@types/react-syntax-highlighter": "^15.5.0",
+    "autoprefixer": "10.4.20",
+    "postcss": "8.4.41",
+    "tailwindcss": "3.4.10",
+    "tailwindcss-animate": "^1.0.7",
+    "typescript": "5.9.2"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

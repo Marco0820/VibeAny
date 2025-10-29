@@ -1,0 +1,149 @@
+Phase 0 · 目标对齐与基线重构
+
+范围：确认业务指标、合规要求、现有积分实现、第三方支付限制。
+重点交付
+现状审计：PointsService 用法、账单流程、/pricing 文案、支付方试用支持、数据库容量监控。
+成本模型：BC/RC/Usage 对应 COGS（模型 API 费、CPU/带宽、DB）。
+对齐说明：新增 Scale 档、PAYG 默认开启、Auto-fix 免费层日限额 3 次、免额 20% 适用于全量用户。
+风险列单：支付试用周期限制、Usage 监控数据源、老用户迁移策略。
+项目组织：职责分工（后端计费、Usage、前端、支付、风控、运营）、里程碑、周会/同步节奏。
+Phase 1 · 计划与额度模型（Plan & Allowance Foundations）
+
+数据模型
+plans：字段 bc_monthly、rc_monthly、trial_days=1、shared_mode（shared_pool/hybrid）、payg_enabled=true。
+allowances：多层额度（BC/RC/Usage），含 window、rollover_policy、source_plan_id、expires_at。
+rollover_buckets：管理月度/年度结转；FIFO 消耗。
+addons、referral_events、budget_guards、overage_charges 等结构预留。
+业务逻辑
+订阅激活 → 发放 BC/RC、配置 Usage 免额（20% 渠道），UsageBudget 默认启用。
+月付结转 1 周期、年付全年滚动；每日免费 BC（1 BC）独立 allowance。
+Scale 档 $225/mo：bc=1000、rc=12000。
+Auto-fix 免费层日限额 3 次记录于 allowance_daily_autofix.
+接口
+GET /api/billing/plans 返回计划 & 额度；membership API 调整试用天数。
+计划迁移脚本：现存订阅映射到 Pro-100,Pro-400，Enterprise 对齐 Business。
+前端
+/pricing 更新 PRICING_PLANS，新增 Scale 卡片、1 day trial 文案、积分表格、Shopify integration 状态。
+CTA/工具提示说明 BC/RC/Usage 配比、结转、PAYG。
+迁移策略
+老用户：公告 + 自动迁移，保证免额降至 20% 后仍满足合同；必要时给补贴。
+数据迁移：脚本将旧积分余额转入 allowances 与 rollover_buckets。
+Phase 2 · BillingService & 消耗引擎
+
+核心能力
+BillingService（或扩展 PointsService）：
+发放/撤销 allowances。
+consume 执行动作扣减，支持优先结转、预估(would_consume)、Auto-fix 免费层计费。
+记录 ConsumptionEvent（type, amount, complexity_score, action_hash）。
+复杂度评分：Token 数、文件改动数、测试结果→ complexity_score 0–5。
+Auto-fix 免费层：每日 3 次限额，超出返回错误；付费层免扣。
+Usage PAYG 默认启用：若无可用额度直接计入 overage_charges，同时检查 BudgetGuard。
+对接点
+与 CLI/Agent 服务串联：execute_act_task 调用 BillingService.consume。
+与外部 API 调用层：调用 RC、Usage 扣减。
+可配置
+billing_config 保存消耗映射（动作→BC/RC、复杂度系数、Auto-fix 限额）。
+后台热更新 → 缓存 & 事件广播。
+测试要求
+单元测试覆盖核心函数；模拟高并发扣减；事务一致性；Audit 日志可追溯。
+Phase 3 · Usage Metering & PAYG 体系
+
+指标采集
+出网流量：Ingress/egress 监控 → 汇总 GiB。
+Autoscale CU：应用监控上报 CPU/RAM 秒 → 折算 CU=CPU_sec*18 + RAM_sec*2（可配置）。
+Requests：API Gateway 统计总请求数、区分前后端。
+数据库：存储（GiB）、活跃连接时长（h）。
+数据管道
+每小时记录 UsageMeterReading（workspace_id, metric, value, period）。
+聚合任务：每日/账单日生成 usage_summary，对比免额；超额写 OverageCharge。
+PAYG 默认启用：当超额发生即产生费用，需与支付/账单链接。
+预算护栏
+BudgetGuard：Owner 设置 monthly_cap，默认根据 plan 建议值。
+行为：达到 cap → 策略 suspend_overage 或 throttle。
+API
+POST /api/billing/usage（机器→系统）
+GET /api/billing/usage（仪表盘）
+GET /api/billing/overages（账单）
+风控监测
+初步规则（夜间连击、大额突增等）纳入此阶段，触发 billing:alert。
+Phase 4 · 前端展示 & 用户体验
+
+Pricing 页面
+Plan 卡片 + 积分/Usage 表格。
+“欢迎包”：为买家展示 1 天 10 BC / 200 RC；落地在订单确认页。
+注明 PAYG 默认开启、免额 20%、Auto-fix 免费层限 3 次。
+仪表盘 Billing Tab
+视图：
+总览：今日免费 BC、月度剩余 BC/RC、结转余额、Usage 免额 vs 已用。
+Usage PAYG：展示超额费用、预算上限、历史曲线。
+模式切换：Shared Pool vs Hybrid。
+成员/项目细分：个人 BC、项目 RC/Usage 消耗。
+试用倒计时：1 天剩余时间。
+交互：
+高消耗操作弹窗 → 预估 BC/RC。
+通知入口 → 阈值/预算/到期提醒。
+Add-on 入口（若启用）。
+文案与教育
+Tooltips/FAQ 解释 BC/RC、Usage、PAYG、防止误解。
+老用户迁移提示。
+Phase 5 · 支付与订阅集成
+
+Plan 对接
+Creem/Stripe/PayPal 产品 ID 更新：Scale $225/mo、1 day trial。
+确认支付方是否允许 1 日试用；如不支持需 fallback（0 元首日 + 延迟扣费）。
+订阅状态与 plan 表同步；自动续费→发放新额度；取消/降级→停止发放。
+Billing 引擎联动
+账单日 cron：
+汇总 BC/RC/Usage 消耗、加包、超额；生成 Invoice。
+执行结转、过期。（月付 roll 1 周期，年付 roll 到年末）
+PAYG 费用 → 自动扣款或累积至当月账单。
+试用结束 → 若未付费则降级到 Free；通知用户。
+Enterprise
+CRM 流程：Business/Scale 线索入 CRM，手动生成合同 & 发放额度。
+自定义资源包（Usage add-on）配置接口。
+Phase 6 · 通知、运营、风控
+
+提醒体系
+阈值 50/80/100%（BC/RC/Usage）→ 邮件 + 站内信 + WebSocket。
+预算上限即将触顶、PAYG 费用预警、结转即将过期。
+试用结束前 12 小时提醒。
+风控引擎
+规则：Auto-fix 高频、夜间大额 RC、出网突增。
+行为：自动限流、人工复核任务、冻结操作。
+Dashboard：风控团队查看告警。
+运营激励
+邀请奖励：触发 referral_events，自动发放额度、到期提醒。
+教育折扣：审核流程 & 后台开关。
+冷启动奖励：新用户首月自动发放 +20%（Allowance.bonus）。
+指标
+埋点：操作类型、预估弹窗展示率、通知点击率。
+BI 报表：BC/RC 消耗分布、Usage 超额、PAYG 收入。
+Phase 7 · QA、迁移、上线与回滚预案
+
+测试矩阵
+功能测试：BC/RC 扣减、Auto-fix 限额、Usage 超额、BudgetGuard、试用流程。
+性能：高并发扣费、Usage 写入。
+数据一致性：结转、日/月任务执行、Roll-over 先入先出。
+UI：/pricing、仪表盘、通知、暗色模式。
+迁移执行
+先演练：Staging 环境 → 压测 → 审计日志比对。
+正式迁移流程：
+低峰时间停写旧积分表。
+执行数据迁移脚本。
+验证 plan & allowance 数据、支付同步。
+切换前端文案。
+回滚：保留旧表备份、配置开关，必要时回滚到原积分体系。
+上线节奏
+内部 Beta：选定 1–2 个团队试用。
+公测：小范围启用、收集反馈。
+全量发布：公告、FAQ、客服培训。
+后续监控
+指标看板：BC/RC 消耗曲线、PAYG 收入、BudgetGuard 触发率。
+客诉工单处理流程。
+迭代计划：复杂度算法调优、Auto-fix 再优化、企业定制需求。
+总结
+
+7 个阶段从基线梳理→模型搭建→计费引擎→Usage/PAYG→前端体验→支付风控→上线。
+每阶段都有清晰的设计、数据、接口、风控与测试要求，确保积分体系可落地、可扩展、可运营。
+推荐按照阶段逐步实施，阶段间设置验收门槛，保障交付质量。
+详细拆解上述Phase 0 · 目标对齐与基线重构和Phase 1 · 计划与额度模型（Plan & Allowance Foundations）的需求文档
