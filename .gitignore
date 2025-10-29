@@ -1,1 +1,40 @@
-node_modules
+# Next.js 缓存和构建产物
+.next/
+out/
+
+# Next.js
+apps/web/.next/
+apps/web/out/
+apps/web/.vercel/
+
+# 常见依赖目录
+apps/web/node_modules/
+
+# 其他常见冗余文件
+node_modules/
+.env
+.env.local
+.DS_Store  # Mac系统文件
+
+# Next.js 相关（覆盖所有子目录）
+**/.next/
+**/out/
+**/.vercel/
+
+# 大文件目录（按需保留，若无需提交gif则保留此规则）
+assets/gif/
+
+# 依赖目录（覆盖根目录和子项目）
+node_modules/
+**/node_modules/  # 确保子目录（如apps/web）的node_modules也被忽略
+
+# 环境变量文件
+.env
+.env.local
+.env.development
+.env.production
+
+# 包管理冗余文件
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
