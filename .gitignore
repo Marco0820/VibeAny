@@ -7,6 +7,10 @@ apps/web/.next/
 apps/web/out/
 apps/web/.vercel/
 
+apps/api/.venv/
+
+
+
 # 常见依赖目录
 apps/web/node_modules/
 
