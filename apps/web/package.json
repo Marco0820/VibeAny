@@ -9,12 +9,12 @@
     "start": "next start"
   },
   "dependencies": {
-    "@radix-ui/react-accordion": "^1.2.2",
-    "@radix-ui/react-slot": "^1.0.3",
     "@builder.io/react": "^8.2.7",
     "@builder.io/sdk": "^6.1.2",
     "@builder.io/widgets": "^2.0.3",
     "@emotion/react": "^11.14.0",
+    "@radix-ui/react-accordion": "^1.2.2",
+    "@radix-ui/react-slot": "^1.0.3",
     "class-variance-authority": "^0.7.0",
     "clsx": "2.1.1",
     "critters": "^0.0.23",
@@ -26,8 +26,9 @@
     "open": "^10.2.0",
     "react": "18.2.0",
     "react-dom": "18.2.0",
+    "react-icons": "^5.5.0",
     "react-markdown": "^10.1.0",
-    "react-syntax-highlighter": "^15.6.1",
+    "react-syntax-highlighter": "^16.1.0",
     "tailwind-merge": "^2.5.4",
     "use-typed-event-listener": "^4.0.2"
   },
