@@ -44,14 +44,16 @@ export default function Header() {
                   </button>
                 )}
                 <div className="h-8">
-                  <Image 
-                    src="/VibeAny_logo.png"
-                    alt="VibeAny"
-                    width={120}
-                    height={32}
-                    className="h-8 w-auto"
-                    priority
-                  />
+                  <a href="/" aria-label="Go to homepage" className="inline-flex">
+                    <Image 
+                      src="/VibeAny_logo.png"
+                      alt="VibeAny"
+                      width={120}
+                      height={32}
+                      className="h-8 w-auto"
+                      priority
+                    />
+                  </a>
                 </div>
               </div>
               <div className="flex items-center gap-3">

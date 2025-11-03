@@ -101,9 +101,8 @@ export default function MarketingPage() {
             <h1 className="text-4xl font-bold leading-tight sm:text-5xl lg:text-6xl">
               Build, Test, and Grow APP/Stores with AI — All in One App
             </h1>
-            <p className="max-w-3xl text-lg text-white/70">
-              从创意、生成、调试到部署，VibeAny 让电商团队把每一次灵感转化成可运营的商业体验。
-              免费开始，随时升级到全功能方案。
+            <p className="max-w-3xl text-lg text-white">
+              Start for free. Upgrade to get the capacity that exactly matches your team's needs.
             </p>
             <div className="flex flex-col items-center gap-4 sm:flex-row">
               <Link

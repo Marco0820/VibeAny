@@ -200,8 +200,7 @@ h6 {
   margin-bottom: 1em;
 }
 
-html.vibeany-site,
-html.vibeany-site body {
+.vibeany-shell {
   background-color: var(--bg-primary, #f1fff9);
   background-image:
     linear-gradient(rgba(241, 255, 249, 0) 70%, rgb(241, 255, 249)),
@@ -216,11 +215,11 @@ html.vibeany-site body {
   font-family: 'Inter', 'Plus Jakarta Sans', 'Avenir', 'Helvetica', 'Arial', sans-serif;
 }
 
-html.vibeany-site body {
+.vibeany-shell {
   min-height: 100vh;
 }
 
-html.vibeany-site {
+.vibeany-shell {
   --tw-bg-opacity: 1;
   --gradient-opacity: 0.8;
   --primary-color: rgba(139, 92, 246, var(--gradient-opacity));
@@ -240,10 +239,10 @@ html.vibeany-site {
   --bolt-text-tertiary: #64748b;
 }
 
-html.vibeany-site main section,
-html.vibeany-site .section,
-html.vibeany-site .cta,
-html.vibeany-site .pricing-cards-wrapper {
+.vibeany-shell main section,
+.vibeany-shell .section,
+.vibeany-shell .cta,
+.vibeany-shell .pricing-cards-wrapper {
   background-color: var(--bg-primary);
   background-image: linear-gradient(var(--bg-gradient-top) 0%, var(--bg-gradient-mid) 45%, var(--bg-gradient-bottom) 100%);
   background-repeat: no-repeat;
@@ -256,13 +255,13 @@ html.vibeany-site .pricing-cards-wrapper {
   transition: background 0.4s ease-in-out, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-html.vibeany-site .builder-text,
-html.vibeany-site .builder-text * {
+.vibeany-shell .builder-text,
+.vibeany-shell .builder-text * {
   color: var(--bolt-text-primary);
 }
 
-html.vibeany-site :is(main section, .section, .cta, .pricing-cards-wrapper),
-html.vibeany-site :is(main section, .section, .cta, .pricing-cards-wrapper) * {
+.vibeany-shell :is(main section, .section, .cta, .pricing-cards-wrapper),
+.vibeany-shell :is(main section, .section, .cta, .pricing-cards-wrapper) * {
   color: var(--bolt-text-primary);
 }
 
@@ -291,7 +290,7 @@ html.vibeany-site :is(main section, .section, .cta, .pricing-cards-wrapper) * {
   text-decoration: underine;
 }
 
-* {
+.vibeany-shell * {
   line-height: normal;
 }
 
@@ -305,7 +304,7 @@ html {
   setting the bg color to #fafafa. To make the selector stronger to make the bg 
   color white, we use `html body` to override this, as a last resort...
 */
-html body {
+.vibeany-shell {
   background-color: #f1fff9;
   background-image:
     linear-gradient(rgba(241, 255, 249, 0) 70%, rgb(241, 255, 249)),

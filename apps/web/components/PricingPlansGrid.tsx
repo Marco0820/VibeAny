@@ -37,31 +37,34 @@ export function PricingPlansGrid({ withProviderSwitcher = false, className }: Pr
 
   return (
     <div className={clsx('flex w-full flex-col gap-10', className)}>
-      {withProviderSwitcher && (
-        <MotionDiv
-          className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-indigo-50/90"
-          initial="hidden"
-          animate="show"
-          variants={fadeIn}
-          custom={0}
-        >
-          <span>Select payment provider:</span>
-          <div className="flex gap-1 rounded-full bg-white/10 p-1">
-            {PAYMENT_PROVIDERS.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => setProvider(item.id)}
-                className={clsx(
-                  'px-3 py-1 text-xs font-medium transition-all duration-200 rounded-full',
-                  provider === item.id ? 'bg-white text-indigo-600 shadow' : 'text-indigo-50 hover:bg-white/20',
-                )}
-              >
-                {item.name}
-              </button>
-            ))}
-          </div>
-        </MotionDiv>
-      )}
+      {/*
+        Temporarily disabled provider switcher
+        {withProviderSwitcher && (
+          <MotionDiv
+            className="inline-flex w-full items-center justify-center gap-3 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm text-indigo-50/90"
+            initial="hidden"
+            animate="show"
+            variants={fadeIn}
+            custom={0}
+          >
+            <span>Select payment provider:</span>
+            <div className="flex gap-1 rounded-full bg-white/10 p-1">
+              {PAYMENT_PROVIDERS.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => setProvider(item.id)}
+                  className={clsx(
+                    'px-3 py-1 text-xs font-medium transition-all duration-200 rounded-full',
+                    provider === item.id ? 'bg-white text-indigo-600 shadow' : 'text-indigo-50 hover:bg-white/20',
+                  )}
+                >
+                  {item.name}
+                </button>
+              ))}
+            </div>
+          </MotionDiv>
+        )}
+      */}
 
       <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-4">
         {planCards.map((plan, index) => (

@@ -78,36 +78,25 @@ export default function PricingPage() {
           <div className="absolute inset-x-0 top-0 h-[480px] rounded-b-[80px] bg-gradient-to-br from-indigo-500 via-purple-500 to-sky-400 opacity-80 blur-3xl" />
         </div>
 
-        <section className="pricing-hero-section max-w-6xl mx-auto px-6 pt-24 pb-12 text-center text-indigo-600">
+        <section className="pricing-hero-section max-w-6xl mx-auto px-6 pt-24 pb-12 text-center text-white">
           <MotionH1
-            className="text-4xl sm:text-5xl font-extrabold tracking-tight text-indigo-600"
+            className="text-4xl sm:text-5xl font-extrabold tracking-tight text-white"
             initial="hidden"
             animate="show"
             variants={fadeIn}
             custom={0}
           >
-            Unified Plans. 1 Day Trial.
+            Let dreams shine into reality
           </MotionH1>
-          <MotionH2
-            className="mt-3 text-3xl sm:text-4xl font-semibold text-indigo-600"
-            initial="hidden"
-            animate="show"
-            variants={fadeIn}
-            custom={0.2}
-          >
-            <span className="inline-flex items-center justify-center rounded-xl bg-white/90 px-3 py-1 text-base font-medium uppercase tracking-wide text-indigo-600">
-              PAYG Default On · BudgetGuard Ready
-            </span>
-          </MotionH2>
+          
           <MotionP
-            className="mx-auto mt-4 max-w-3xl text-lg text-indigo-600"
+            className="mx-auto mt-4 max-w-3xl text-lg text-white"
             initial="hidden"
             animate="show"
             variants={fadeIn}
             custom={0.4}
           >
-            Choose Free, Pro, Scale, or Enterprise plans and keep automation, runtime, and usage credits aligned.
-            PAYG charges kick in automatically with 20% grace, while BudgetGuard keeps your spend under control.
+            Start for free. Upgrade to get the capacity that exactly matches your team's needs.
           </MotionP>
         </section>
 

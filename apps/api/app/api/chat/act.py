@@ -48,6 +48,10 @@ class ActRequest(BaseModel):
     fallback_enabled: bool = True
     images: List[ImageAttachment] = []
     is_initial_prompt: bool = False
+    # Planning-only flag: when true (for chat endpoint), generate a detailed plan text without any file edits
+    is_planning: bool = False
+    # Combined flow: generate planning text first, then proceed to code generation and preview in one step
+    plan_then_generate: bool = False
 
 
 class ActResponse(BaseModel):
@@ -270,6 +274,17 @@ async def execute_chat_task(
         
         # Qwen Coder does not support images yet; drop them to prevent errors
         safe_images = [] if cli_preference == CLIType.QWEN else images
+
+        # If this is an initial prompt, enforce one-shot full generation without follow-up questions
+        if is_initial_prompt:
+            initial_marker = "[is_initial_prompt=true]"
+            initial_guidance = (
+                "\n\n" + initial_marker + "\n"
+                "请一次性产出可运行的 Next.js 应用所需代码：页面/组件/样式/配置；"
+                "若信息缺失，请使用合理默认并在结果中列出‘假设 Assumptions’；"
+                "完成后触发预览事件（无需与用户进一步追问）。\n"
+            )
+            instruction = instruction + initial_guidance
 
         result = await cli_manager.execute_instruction(
             instruction=instruction,
@@ -720,6 +735,80 @@ async def run_act(
         elif name_value:
             image_paths.append(name_value)
 
+    # Optionally: plan then generate in one step
+    if body.plan_then_generate:
+        try:
+            import os
+            from openai import OpenAI
+
+            api_key = os.getenv("OPENAI_API_KEY")
+            if not api_key:
+                raise RuntimeError("缺少 OPENAI_API_KEY 环境变量")
+
+            client = OpenAI(api_key=api_key)
+            model_name = os.getenv("OPENAI_PLANNING_MODEL", "gpt-4o-mini")
+
+            system_plan_prompt = (
+                "你是资深全栈架构师。先输出‘详细执行方案’，然后我们会立即进入代码生成。\n"
+                "方案需覆盖：页面/路由、组件拆分、状态与数据结构、样式与依赖、接口与集成、文件结构建议、假设与未定项、风险与测试要点。\n"
+                "保持结构化分节，清晰易确认。"
+            )
+
+            completion = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": system_plan_prompt},
+                    {"role": "user", "content": instruction_text},
+                ],
+                temperature=0.2,
+            )
+            plan_text = completion.choices[0].message.content or "(规划生成失败)"
+        except Exception as e:
+            ui.error(f"Planning generation failed before ACT: {e}", "ACT")
+            plan_text = f"❗ 规划生成失败：{e}"
+
+        # Save assistant planning message (so用户能看到规划文本), before code execution
+        planning_msg = Message(
+            id=str(uuid.uuid4()),
+            project_id=project_id,
+            role="assistant",
+            message_type="chat",
+            content=plan_text,
+            metadata_json={
+                "type": "planning_result",
+                "planning": True,
+                "combined": True
+            },
+            conversation_id=conversation_id,
+            created_at=datetime.utcnow(),
+        )
+        db.add(planning_msg)
+        db.commit()
+
+        await manager.send_message(
+            project_id,
+            {
+                "type": "message",
+                "data": {
+                    "id": planning_msg.id,
+                    "role": planning_msg.role,
+                    "message_type": planning_msg.message_type,
+                    "content": planning_msg.content,
+                    "metadata_json": planning_msg.metadata_json,
+                    "parent_message_id": None,
+                    "session_id": None,
+                    "conversation_id": conversation_id,
+                    "created_at": planning_msg.created_at.isoformat(),
+                },
+                "timestamp": planning_msg.created_at.isoformat(),
+            },
+        )
+
+        # Append the plan to instruction to guide the one-shot generation
+        instruction_text = (
+            f"{instruction_text}\n\n<CONFIRMED_PLAN>\n{plan_text}\n</CONFIRMED_PLAN>\n"
+        )
+
     message_content = instruction_text
     if image_paths:
         refs = [f"Image #{idx + 1} path: {path}" for idx, path in enumerate(image_paths)]
@@ -878,5 +967,111 @@ async def run_chat(
     db: Session = Depends(get_db),
     user: Optional[User] = Depends(get_generation_user),
 ):
-    """Alias chat endpoint to the ACT two-stage workflow."""
+    """Chat endpoint: supports planning-only (no code writes) on first step, or regular chat via ACT pipeline."""
+
+    # Planning-only branch: generate a detailed execution plan text, without invoking CLI or making file edits
+    if body.is_planning:
+        instruction_text = body.instruction.strip()
+        if not instruction_text:
+            raise HTTPException(status_code=400, detail="指令内容不能为空")
+
+        project = db.get(Project, project_id)
+        if not project:
+            raise HTTPException(status_code=404, detail="Project not found")
+
+        conversation_id = body.conversation_id or str(uuid.uuid4())
+
+        # Save the user message
+        user_message = Message(
+            id=str(uuid.uuid4()),
+            project_id=project_id,
+            role="user",
+            message_type="chat",
+            content=instruction_text,
+            metadata_json={
+                "type": "planning_request"
+            },
+            conversation_id=conversation_id,
+            created_at=datetime.utcnow(),
+        )
+        db.add(user_message)
+        db.commit()
+
+        # Generate plan using OpenAI (default model) - text only, no tools
+        try:
+            import os
+            from openai import OpenAI
+
+            api_key = os.getenv("OPENAI_API_KEY")
+            if not api_key:
+                raise RuntimeError("缺少 OPENAI_API_KEY 环境变量")
+
+            client = OpenAI(api_key=api_key)
+            model_name = os.getenv("OPENAI_PLANNING_MODEL", "gpt-4o-mini")
+
+            system_plan_prompt = (
+                "你是资深全栈架构师。当前阶段只输出‘详细执行方案’，不要做任何代码修改。\n"
+                "请结构化给出：页面与路由、组件拆分、状态与数据结构、样式与依赖、接口与集成、文件结构建议、边界与假设、风险与测试要点。\n"
+                "输出清晰分节，便于确认；不要请求进一步澄清，不要提示下一步操作。"
+            )
+
+            completion = client.chat.completions.create(
+                model=model_name,
+                messages=[
+                    {"role": "system", "content": system_plan_prompt},
+                    {"role": "user", "content": instruction_text},
+                ],
+                temperature=0.2,
+            )
+            plan_text = completion.choices[0].message.content or "(规划生成失败)"
+        except Exception as e:
+            ui.error(f"Planning generation failed: {e}", "CHAT")
+            plan_text = f"❗ 规划生成失败：{e}"
+
+        # Save assistant planning message
+        plan_message = Message(
+            id=str(uuid.uuid4()),
+            project_id=project_id,
+            role="assistant",
+            message_type="chat",
+            content=plan_text,
+            metadata_json={
+                "type": "planning_result",
+                "planning": True
+            },
+            conversation_id=conversation_id,
+            created_at=datetime.utcnow(),
+        )
+        db.add(plan_message)
+        db.commit()
+
+        # Push via WebSocket
+        await manager.send_message(
+            project_id,
+            {
+                "type": "message",
+                "data": {
+                    "id": plan_message.id,
+                    "role": plan_message.role,
+                    "message_type": plan_message.message_type,
+                    "content": plan_message.content,
+                    "metadata_json": plan_message.metadata_json,
+                    "parent_message_id": None,
+                    "session_id": None,
+                    "conversation_id": conversation_id,
+                    "created_at": plan_message.created_at.isoformat(),
+                },
+                "timestamp": plan_message.created_at.isoformat(),
+            },
+        )
+
+        # Return a lightweight response (no running session for planning)
+        return ActResponse(
+            session_id="",
+            conversation_id=conversation_id,
+            status="completed",
+            message="Planning generated",
+        )
+
+    # Default: use ACT two-stage pipeline
     return await run_act(project_id, body, background_tasks, db, user)

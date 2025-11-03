@@ -27,6 +27,20 @@ const PROMPT_SUGGESTIONS = [
   { emoji: "🔗", label: "Networking App" },
 ];
 
+// Map suggestion label to the full prompt description text
+const PROMPT_DESCRIPTIONS: Record<string, string> = {
+  "Reporting Dashboard":
+    "Create a dashboard for small business owners. It should be able to track revenue, expenses, and customer growth. Include charts, filters, and the ability to export reports.",
+  "Gaming Platform":
+    "Build a web-based game that helps kids practice math skills through interactive challenges. Include levels, progress tracking, and rewards for completing tasks.",
+  "Onboarding Portal":
+    "Design an onboarding portal that guides new employees through key company policies, values, and team introductions. Make it feel welcoming, interactive, and easy to follow.",
+  "Room Visualizer":
+    "Build a tool where users can upload a photo of their room and apply different interior design styles using AI. Let them save, compare, and share their styled images.",
+  "Networking App":
+    "Create a networking app for first-time startup founders to connect based on location, industry, and funding stage. Include profiles, messaging, and event discovery.",
+};
+
 const FEATURE_SECTIONS = [
   {
     title: "Create at the speed of thought",
@@ -510,8 +524,8 @@ export function MarketingLandingPage() {
               <h1 className="text-4xl font-semibold leading-tight text-slate-900 sm:text-5xl lg:text-[68px]">
                 Build, Test, and Grow APP/Stores with AI — All in One App
               </h1>
-              <p className="max-w-2xl text-lg text-slate-700">
-                VibeAny lets you build fully-functional apps in minutes with just your words. No coding necessary.
+              <p className="max-w-2xl text-lg text-white">
+                Start for free. Upgrade to get the capacity that exactly matches your team's needs.
               </p>
 
               <div className="flex w-full flex-col items-center">
@@ -559,7 +573,10 @@ export function MarketingLandingPage() {
                       key={label}
                       type="button"
                       className="flex items-center gap-2 rounded-full border border-white/70 bg-white/80 px-5 py-2 text-sm font-medium text-slate-700 transition hover:bg-white"
-                      onClick={() => setPromptValue(`${emoji} ${label}`)}
+                      onClick={() => {
+                        const desc = PROMPT_DESCRIPTIONS[label] ?? `${emoji} ${label}`;
+                        setPromptValue(desc);
+                      }}
                     >
                       <span>{emoji}</span>
                       {label}

@@ -286,6 +286,28 @@ export function useChat({ projectId, conversationId }: UseChatOptions) {
       }
 
       const API_BASE = getApiBase();
+      // 合并模式：首次输入直接走 ACT，一步完成 规划+生成+预览
+      if (messages.length === 0) {
+        const response = await fetch(`${API_BASE}/api/chat/${projectId}/act`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            instruction,
+            conversation_id: conversationId,
+            cli_preference: options?.cliPreference,
+            fallback_enabled: options?.fallbackEnabled,
+            images: preparedImages,
+            is_initial_prompt: true,
+            plan_then_generate: true
+          })
+        });
+        if (!response.ok) throw new Error('Failed to execute combined plan+generate');
+        const result = await response.json();
+        setCurrentSession(result);
+        return result;
+      }
+
+      // 非首次：按普通 Chat 进入对话微调
       const response = await fetch(`${API_BASE}/api/chat/${projectId}/chat`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -294,7 +316,8 @@ export function useChat({ projectId, conversationId }: UseChatOptions) {
           conversation_id: conversationId,
           cli_preference: options?.cliPreference,
           fallback_enabled: options?.fallbackEnabled,
-          images: preparedImages
+          images: preparedImages,
+          is_planning: false
         })
       });
 

@@ -11,15 +11,8 @@ import LandingHeaderPages from '@/components/LandingHeaderPages';
 export default function VibeAnyApp({ Component, pageProps }: AppProps) {
   const isVibeAnyRoute = Boolean((pageProps as any)?.isVibeAnyRoute);
 
-  useEffect(() => {
-    if (typeof document === 'undefined') return;
-    const root = document.documentElement;
-    if (isVibeAnyRoute) {
-      root.classList.add('vibeany-site');
-    } else {
-      root.classList.remove('vibeany-site');
-    }
-  }, [isVibeAnyRoute]);
+  // Remove toggling of root html class to avoid layout flashes; styles are now scoped to .vibeany-shell
+  useEffect(() => {}, [isVibeAnyRoute]);
 
   const shellClassName = isVibeAnyRoute
     ? 'vibeany-shell min-h-screen'
