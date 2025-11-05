@@ -1,5 +1,13 @@
 @import '../styles/scrollbar.css';
 
+.w-\[100px\] {
+  width: 140px !important;
+}
+
+.h-\[120px\] {
+  height: 120px !important;
+}
+
 @font-face {
   font-family: 'Inter';
   font-style: normal;
@@ -170,22 +178,6 @@
 
 .pricing-bg {
   background: linear-gradient(180deg, #1a3a4a 0%, #0f2838 100%);
-}
-
-.style_animate-slideDown__alSfM {
-  transform: translateY(150px);
-  animation: style_slideDown__ofYbG 0.5s ease-out 0.8s forwards;
-}
-
-@keyframes style_slideDown__ofYbG {
-  from {
-    opacity: 0;
-    transform: translateY(150px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
 }
 
 .comp-mcf1u9k6 {

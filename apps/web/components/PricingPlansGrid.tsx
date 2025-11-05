@@ -6,10 +6,15 @@ import clsx from 'clsx';
 import { PAYMENT_PROVIDERS, PRICING_PLANS } from '@/constants/pricing';
 import { MotionDiv } from '@/lib/motion';
 
+type BillingCycle = 'monthly' | 'yearly';
+
 type PricingPlansGridProps = {
   withProviderSwitcher?: boolean;
   className?: string;
+  billingCycle?: BillingCycle;
 };
+
+const BILLING_DISCOUNT = 0.2;
 
 const fadeIn = {
   hidden: { opacity: 0, y: 30 },
@@ -20,7 +25,42 @@ const fadeIn = {
   }),
 };
 
-export function PricingPlansGrid({ withProviderSwitcher = false, className }: PricingPlansGridProps) {
+const currencyFormatter = new Intl.NumberFormat('en-US', {
+  style: 'currency',
+  currency: 'USD',
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+
+function formatPrice(monthlyPrice: number, cycle: BillingCycle) {
+  if (monthlyPrice === 0) {
+    return {
+      label: '$0',
+      sub: cycle === 'yearly' ? '年付免费' : '永久免费基础功能',
+    };
+  }
+
+  if (cycle === 'monthly') {
+    return {
+      label: `${currencyFormatter.format(monthlyPrice)}/mo`,
+      sub: '按月计费，可随时升级',
+    };
+  }
+
+  const annualPrice = monthlyPrice * 12 * (1 - BILLING_DISCOUNT);
+  const savedAmount = monthlyPrice * 12 - annualPrice;
+
+  return {
+    label: `${currencyFormatter.format(annualPrice)}/yr`,
+    sub: `年付立减 ${currencyFormatter.format(savedAmount)}（节省 20%）`,
+  };
+}
+
+export function PricingPlansGrid({
+  withProviderSwitcher = false,
+  className,
+  billingCycle = 'monthly',
+}: PricingPlansGridProps) {
   const planCards = useMemo(() => PRICING_PLANS, []);
   const [provider, setProvider] = useState(PAYMENT_PROVIDERS[0]?.id ?? 'creem');
   const [featureSelections, setFeatureSelections] = useState<Record<string, boolean[]>>(() =>
@@ -114,14 +154,29 @@ export function PricingPlansGrid({ withProviderSwitcher = false, className }: Pr
                   {plan.headline}
                 </p>
               )}
-              <p
-                className={clsx(
-                  'mt-4 text-4xl font-bold',
-                  plan.primary ? 'text-white' : 'text-gray-900 dark:text-white',
-                )}
-              >
-                {plan.price}
-              </p>
+              {(() => {
+                const pricing = formatPrice(plan.monthlyPrice, billingCycle);
+                return (
+                  <>
+                    <p
+                      className={clsx(
+                        'mt-4 text-4xl font-bold',
+                        plan.primary ? 'text-white' : 'text-gray-900 dark:text-white',
+                      )}
+                    >
+                      {pricing.label}
+                    </p>
+                    <p
+                      className={clsx(
+                        'mt-1 text-xs',
+                        plan.primary ? 'text-indigo-100/90' : 'text-gray-500 dark:text-gray-300',
+                      )}
+                    >
+                      {pricing.sub}
+                    </p>
+                  </>
+                );
+              })()}
               <p
                 className={clsx(
                   'mt-2 text-sm',

@@ -6,7 +6,7 @@ export type PricingFeature = {
 export type PricingPlan = {
   id: string;
   title: string;
-  price: string;
+  monthlyPrice: number;
   description: string;
   headline?: string;
   cta: string;
@@ -24,7 +24,7 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: 'free',
     title: 'Free',
-    price: '$0',
+    monthlyPrice: 0,
     headline: 'Auto-fix 3 daily · 20% usage buffer',
     description: '1 BC auto-fix per day, PAYG optional after card on file.',
     cta: 'Start For Free',
@@ -41,7 +41,7 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: 'pro',
     title: 'Pro Plan',
-    price: '$89/mo',
+    monthlyPrice: 19.9,
     headline: '400 BC · 6,000 RC · 1 Day Trial',
     description: 'PAYG billing enabled, monthly rollover, support for hybrid workflows.',
     cta: 'Start 1 Day Trial',
@@ -60,7 +60,7 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: 'scale',
     title: 'Scale Plan',
-    price: '$225/mo',
+    monthlyPrice: 99.9,
     headline: '1,000 BC · 12,000 RC · 1 Day Trial',
     description: 'Hybrid shared pools with team governance, PAYG enabled by default.',
     cta: 'Upgrade To Scale',
@@ -78,7 +78,7 @@ export const PRICING_PLANS: PricingPlan[] = [
   {
     id: 'enterprise',
     title: 'Enterprise',
-    price: 'Custom',
+    monthlyPrice: 199.9,
     headline: 'Tailored BC/RC mix · Dedicated CSM',
     description: 'Annual rollovers, bespoke compliance reviews, on-call success engineering.',
     cta: 'Contact Sales',

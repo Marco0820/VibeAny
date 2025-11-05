@@ -43,14 +43,14 @@ export default function Header() {
                     </svg>
                   </button>
                 )}
-                <div className="h-8">
+                <div className="h-[120px]">
                   <a href="/" aria-label="Go to homepage" className="inline-flex">
-                    <Image 
-                      src="/VibeAny_logo.png"
+                    <Image
+                      src="/vibe_logo.png"
                       alt="VibeAny"
-                      width={120}
-                      height={32}
-                      className="h-8 w-auto"
+                      width={100}
+                      height={120}
+                      className="h-[120px] w-[100px] tablet:h-[120px] tablet:w-[100px]"
                       priority
                     />
                   </a>

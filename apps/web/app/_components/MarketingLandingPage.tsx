@@ -277,7 +277,7 @@ const headerMenuStyle = {
   "--tw-shadow": "0 0 #0000",
   display: "flex",
   width: "100%",
-  maxWidth: "826px",
+  maxWidth: "1126px",
   flexDirection: "row",
   alignItems: "center",
   justifyContent: "space-between",
@@ -297,7 +297,7 @@ const headerMenuStyle = {
   gap: "16px",
   paddingLeft: "18px",
   paddingRight: "18px",
-  height: "80px",
+  height: "90px",
   paddingTop: "0px",
   paddingBottom: "0px",
 } as CSSProperties;
@@ -388,16 +388,16 @@ export function MarketingLandingPage() {
         style={headerShellStyle}
       >
         <div
-          className="flex h-[80px] w-full max-w-[826px] flex-row items-center justify-between gap-[12px] rounded-full border border-comeback-gray-25/20 px-[18px] backdrop-blur-lg [font-family:var(--font-instrument-serif)] [font-style:normal] tablet:gap-[16px] transition-colors duration-1000 bg-comeback-gray-50/40"
+          className="flex h-[90px] w-full max-w-[1126px] flex-row items-center justify-between gap-[12px] rounded-full border border-comeback-gray-25/20 px-[18px] backdrop-blur-lg [font-family:var(--font-instrument-serif)] [font-style:normal] tablet:gap-[16px] transition-colors duration-1000 bg-comeback-gray-50/40"
           style={headerMenuStyle}
         >
-          <Link href="/" aria-label="Anything homepage">
+          <Link href="/" aria-label="Anything homepage" target="_blank" rel="noopener noreferrer">
             <Image
               alt="Anything Logo"
               src="/vibe_logo.png"
-              width={300}
-              height={150}
-              className="ml-[10px] h-[100px] w-auto tablet:ml-[12px]"
+              width={100}
+              height={120}
+              className="ml-[10px] h-[120px] w-[100px] tablet:ml-[12px] tablet:h-[120px] tablet:w-[100px]"
               style={{ color: "transparent", WebkitTouchCallout: "none" }}
               priority
             />
@@ -407,12 +407,16 @@ export function MarketingLandingPage() {
             <Link
               className="tracking-normal font-semibold [font-family:var(--font-instrument-sans)] desktop:text-[18px] tablet:text-[16px] text-[15px] text-white"
               href="/pricing"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Pricing
             </Link>
             <Link
               className="tracking-normal font-semibold [font-family:var(--font-instrument-sans)] desktop:text-[18px] tablet:text-[16px] text-[15px] text-white"
               href="/AppTemplates"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               AppTemplates
             </Link>
@@ -420,19 +424,23 @@ export function MarketingLandingPage() {
               target="_blank"
               className="tracking-normal font-semibold [font-family:var(--font-instrument-sans)] desktop:text-[18px] tablet:text-[16px] text-[15px] text-white whitespace-nowrap"
               href="https://create.xyz/docs"
-              rel="noreferrer"
+              rel="noopener noreferrer"
             >
               Docs
             </a>
             <Link
               className="tracking-normal font-semibold [font-family:var(--font-instrument-sans)] desktop:text-[18px] tablet:text-[16px] text-[15px] text-white"
               href="/blog"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Blog
             </Link>
             <Link
               className="tracking-normal font-semibold [font-family:var(--font-instrument-sans)] desktop:text-[18px] tablet:text-[16px] text-[15px] text-white"
               href="/login"
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Login
             </Link>
@@ -441,6 +449,8 @@ export function MarketingLandingPage() {
           <Link
             className="flex-row items-center justify-center gap-[4px] font-semibold outline-none transition-colors border-[1px] hover:bg-comeback-gray-700 active:bg-comeback-gray-600 border-transparent text-white p-[12px] hidden whitespace-nowrap rounded-full bg-comeback-gray-900 px-[10px] py-[6px] text-[13px] leading-[120%] tracking-normal [font-family:var(--font-instrument-sans)] [&>span]:[font-family:var(--font-instrument-sans)!important] tablet:block tablet:px-[12px] tablet:py-[8px] tablet:text-[14px] desktop:px-[16px] desktop:py-[10px] desktop:text-[16px] cursor-pointer"
             href="/signup"
+            target="_blank"
+            rel="noopener noreferrer"
           >
             Get started
           </Link>
@@ -469,13 +479,15 @@ export function MarketingLandingPage() {
               className="whitespace-nowrap text-lg font-semibold"
               href="/pricing"
               onClick={() => setIsMenuOpen(false)}
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Pricing
             </Link>
             <a
               href="https://create.xyz/docs"
               target="_blank"
-              rel="noreferrer"
+              rel="noopener noreferrer"
               className="whitespace-nowrap text-lg font-semibold"
               onClick={() => setIsMenuOpen(false)}
             >
@@ -485,6 +497,8 @@ export function MarketingLandingPage() {
               className="whitespace-nowrap text-lg font-semibold"
               href="/blog"
               onClick={() => setIsMenuOpen(false)}
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Blog
             </Link>
@@ -492,6 +506,8 @@ export function MarketingLandingPage() {
               className="whitespace-nowrap text-lg font-semibold"
               href="/careers"
               onClick={() => setIsMenuOpen(false)}
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Careers
             </Link>
@@ -499,6 +515,8 @@ export function MarketingLandingPage() {
               className="whitespace-nowrap text-lg font-semibold"
               href="/login"
               onClick={() => setIsMenuOpen(false)}
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Login
             </Link>
@@ -506,6 +524,8 @@ export function MarketingLandingPage() {
               href="/signup"
               className="mt-2 inline-flex items-center justify-center rounded-full bg-white px-4 py-2 font-medium text-comeback-gray-900"
               onClick={() => setIsMenuOpen(false)}
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Get started
             </Link>
@@ -630,7 +650,7 @@ export function MarketingLandingPage() {
           <section className="testimonial-bg py-20 px-4 sm:px-6 lg:px-8">
             <div className="mx-auto max-w-6xl">
               <h2 className="text-center text-3xl font-light text-slate-900">
-                “Okay, @base_44 has blown my mind.”
+                “Okay, @VibeAny has blown my mind.”
               </h2>
               <p className="mt-4 text-center text-slate-600">
                 And other great things our users say about us.

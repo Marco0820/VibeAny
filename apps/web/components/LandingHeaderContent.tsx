@@ -2,8 +2,7 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useState, type CSSProperties, type MouseEvent as ReactMouseEvent } from 'react';
-import { useAuth } from '@/contexts/AuthContext';
+import { useState, type CSSProperties, type MouseEvent as ReactMouseEvent, ChangeEvent } from 'react';
 
 type LandingHeaderContentProps = {
   currentPath: string;
@@ -13,7 +12,6 @@ type NavLink = {
   label: string;
   href: string;
   external?: boolean;
-  triggerLogin?: boolean;
 };
 
 const landingHeaderContainerStyle = {
@@ -96,7 +94,7 @@ const landingHeaderContainerStyle = {
   scrollbarWidth: 'auto',
   display: 'flex',
   width: '100%',
-  maxWidth: '826px',
+  maxWidth: '1126px',
   flexDirection: 'row',
   alignItems: 'center',
   justifyContent: 'space-between',
@@ -115,21 +113,29 @@ const landingHeaderContainerStyle = {
   fontFamily: 'var(--font-instrument-serif)',
   fontStyle: 'normal',
   gap: '16px',
-  paddingLeft: '14px',
-  paddingRight: '14px',
-  paddingTop: '12px',
-  paddingBottom: '12px',
+  paddingLeft: '18px',
+  paddingRight: '18px',
+  paddingTop: '0px',
+  paddingBottom: '0px',
+  height: '90px',
 } as const;
 
 const landingHeaderStyle = landingHeaderContainerStyle as unknown as CSSProperties;
 
 const navLinks: NavLink[] = [
   { label: 'Pricing', href: '/pricing' },
+  { label: 'AppTemplates', href: '/AppTemplates' },
   { label: 'Docs', href: 'https://create.xyz/docs', external: true },
   { label: 'Blog', href: '/blog' },
-  { label: 'Careers', href: '/careers' },
-  { label: 'Login', href: '/login', triggerLogin: true },
+  { label: 'Login', href: '/login' },
 ];
+
+const languageOptions = [
+  { value: 'en', label: 'English (US)' },
+  { value: 'zh', label: '简体中文' },
+  { value: 'ja', label: '日本語' },
+] as const;
+
 
 function isActiveLink(href: string, currentPath: string, external?: boolean) {
   if (external) return false;
@@ -139,8 +145,12 @@ function isActiveLink(href: string, currentPath: string, external?: boolean) {
 }
 
 export function LandingHeaderContent({ currentPath }: LandingHeaderContentProps) {
-  const { openLogin } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [activeLanguage, setActiveLanguage] = useState<(typeof languageOptions)[number]['value']>('en');
+
+  const handleLanguageChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setActiveLanguage(event.target.value as (typeof languageOptions)[number]['value']);
+  };
 
   const handleNavClick = (event: ReactMouseEvent<HTMLAnchorElement>, link: NavLink) => {
     if (link.triggerLogin) {
@@ -152,18 +162,18 @@ export function LandingHeaderContent({ currentPath }: LandingHeaderContentProps)
   };
 
   return (
-    <header className="style_animate-slideDown__alSfM fixed right-0 left-0 top-[-150px] z-[50] flex flex-row items-center justify-center px-[20px] pt-[20px] sm:px-[30px] sm:pt-[30px] tablet:px-[40px] tablet:pt-[40px]">
+    <header className="fixed left-0 right-0 top-0 z-[50] flex flex-row items-center justify-center px-[20px] pt-[20px] sm:px-[30px] sm:pt-[30px] tablet:px-[40px] tablet:pt-[40px]">
       <div
-        className="flex w-full max-w-[826px] flex-row items-center justify-between gap-[12px] rounded-full border border-comeback-gray-25/20 px-[12px] py-[10px] backdrop-blur-lg [font-family:var(--font-instrument-serif)] [font-style:normal] tablet:gap-[16px] tablet:px-[14px] tablet:py-[12px] transition-colors duration-1000 bg-comeback-gray-50/40"
+        className="flex h-[90px] w-full max-w-[1126px] flex-row items-center justify-between gap-[12px] rounded-full border border-comeback-gray-25/20 px-[18px] backdrop-blur-lg [font-family:var(--font-instrument-serif)] [font-style:normal] tablet:gap-[16px] transition-colors duration-1000 bg-comeback-gray-50/40"
         style={landingHeaderStyle}
       >
         <Link href="/" aria-label="Anything homepage">
           <Image
             alt="Anything Logo"
-            src="/images/homepage-v2/Anything_Logo_White.svg"
-            width={74}
-            height={26}
-            className="ml-[10px] h-auto max-h-[18px] w-auto max-w-[56px] tablet:ml-[12px] tablet:max-h-[24px] tablet:max-w-[68px] desktop:max-h-[26px] desktop:max-w-[74px]"
+            src="/vibe_logo.png"
+            width={100}
+            height={120}
+            className="ml-[10px] h-[120px] w-[100px] tablet:ml-[12px] tablet:h-[120px] tablet:w-[100px]"
             style={{ color: 'transparent', WebkitTouchCallout: 'none' }}
             priority
           />
@@ -181,7 +191,7 @@ export function LandingHeaderContent({ currentPath }: LandingHeaderContentProps)
                   className={`${commonClasses} whitespace-nowrap`}
                   href={link.href}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   onClick={(event: ReactMouseEvent<HTMLAnchorElement>) => handleNavClick(event, link)}
                 >
                   {link.label}
@@ -193,9 +203,11 @@ export function LandingHeaderContent({ currentPath }: LandingHeaderContentProps)
               <Link
                 key={link.label}
                 href={link.href}
-                className={commonClasses}
+                className={`${commonClasses} whitespace-nowrap`}
                 aria-current={isActiveLink(link.href, currentPath) ? 'page' : undefined}
                 onClick={(event: ReactMouseEvent<HTMLAnchorElement>) => handleNavClick(event, link)}
+                target="_blank"
+                rel="noopener noreferrer"
               >
                 {link.label}
               </Link>
@@ -203,10 +215,37 @@ export function LandingHeaderContent({ currentPath }: LandingHeaderContentProps)
           })}
         </div>
 
+        <div className="hidden items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-2 text-white tablet:flex">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            className="h-5 w-5"
+          >
+            <path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm0 0a15.3 15.3 0 0 0 0 20 15.3 15.3 0 0 0 0-20Zm0 0A15.3 15.3 0 0 1 19.5 12 15.3 15.3 0 0 1 12 22" />
+          </svg>
+          <select
+            aria-label="Select language"
+            value={activeLanguage}
+            onChange={handleLanguageChange}
+            className="appearance-none bg-transparent text-sm font-medium text-white focus:outline-none"
+          >
+            {languageOptions.map((option) => (
+              <option key={option.value} value={option.value} className="text-gray-900">
+                {option.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <Link
           href="/signup"
-          className="flex-row items-center justify-center gap-[4px] outline-none transition-colors border-[1px] hover:bg-comeback-gray-700 active:bg-comeback-gray-600 border-transparent text-white p-[12px] hidden whitespace-nowrap rounded-full bg-comeback-gray-900 px-[10px] py-[6px] text-[13px] leading-[120%] tracking-normal [font-family:var(--font-instrument-sans)] [&>span]:[font-family:var(--font-instrument-sans)!important] tablet:block tablet:px-[12px] tablet:py-[8px] tablet:text-[14px] desktop:px-[16px] desktop:py-[10px] desktop:text-[16px] cursor-pointer"
+          className="hidden cursor-pointer flex-row items-center justify-center gap-[4px] rounded-full border border-transparent bg-comeback-gray-900 px-[10px] py-[6px] text-[13px] font-semibold leading-[120%] tracking-normal text-white transition-colors hover:bg-comeback-gray-700 active:bg-comeback-gray-600 [font-family:var(--font-instrument-sans)] [&>span]:[font-family:var(--font-instrument-sans)!important] tablet:flex tablet:px-[12px] tablet:py-[8px] tablet:text-[14px] desktop:px-[16px] desktop:py-[10px] desktop:text-[16px]"
           onClick={() => setIsMenuOpen(false)}
+          target="_blank"
+          rel="noopener noreferrer"
         >
           Get started
         </Link>
@@ -217,7 +256,7 @@ export function LandingHeaderContent({ currentPath }: LandingHeaderContentProps)
           onClick={() => setIsMenuOpen((prev) => !prev)}
           aria-haspopup="dialog"
           aria-expanded={isMenuOpen}
-          aria-controls="landing-header-mobile-menu"
+          aria-controls="mobile-top-menu"
         >
           <svg
             viewBox="0 0 24 24"
@@ -239,7 +278,7 @@ export function LandingHeaderContent({ currentPath }: LandingHeaderContentProps)
 
       {isMenuOpen ? (
         <div
-          id="landing-header-mobile-menu"
+          id="mobile-top-menu"
           className="fixed inset-x-0 top-[72px] z-[40] mx-auto mt-3 w-11/12 max-w-sm rounded-3xl border border-white/20 bg-comeback-gray-900/95 p-6 text-white shadow-2xl tablet:hidden"
         >
           <nav className="flex flex-col gap-4 text-base [font-family:var(--font-instrument-sans)]">
@@ -249,7 +288,7 @@ export function LandingHeaderContent({ currentPath }: LandingHeaderContentProps)
                   key={link.label}
                   href={link.href}
                   target="_blank"
-                  rel="noreferrer"
+                  rel="noopener noreferrer"
                   className="whitespace-nowrap text-lg font-semibold"
                   onClick={(event: ReactMouseEvent<HTMLAnchorElement>) => handleNavClick(event, link)}
                 >
@@ -262,15 +301,43 @@ export function LandingHeaderContent({ currentPath }: LandingHeaderContentProps)
                   className="whitespace-nowrap text-lg font-semibold"
                   aria-current={isActiveLink(link.href, currentPath) ? 'page' : undefined}
                   onClick={(event: ReactMouseEvent<HTMLAnchorElement>) => handleNavClick(event, link)}
+                  target="_blank"
+                  rel="noopener noreferrer"
                 >
                   {link.label}
                 </Link>
               )
             ))}
+            <div className="mt-2 flex items-center gap-3 rounded-2xl border border-white/20 bg-white/10 px-4 py-3 text-sm">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.8"
+                className="h-5 w-5 text-white"
+              >
+                <path d="M12 2a10 10 0 1 0 10 10A10.011 10.011 0 0 0 12 2Zm0 0a15.3 15.3 0 0 0 0 20 15.3 15.3 0 0 0 0-20Zm0 0A15.3 15.3 0 0 1 19.5 12 15.3 15.3 0 0 1 12 22" />
+              </svg>
+              <select
+                aria-label="Select language"
+                value={activeLanguage}
+                onChange={handleLanguageChange}
+                className="w-full appearance-none bg-transparent font-medium text-white focus:outline-none"
+              >
+                {languageOptions.map((option) => (
+                  <option key={option.value} value={option.value} className="text-comeback-gray-900">
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </div>
             <Link
               href="/signup"
               className="mt-2 inline-flex items-center justify-center rounded-full bg-white px-4 py-2 font-medium text-comeback-gray-900"
               onClick={() => setIsMenuOpen(false)}
+              target="_blank"
+              rel="noopener noreferrer"
             >
               Get started
             </Link>
