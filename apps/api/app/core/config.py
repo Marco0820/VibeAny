@@ -30,6 +30,7 @@ def find_project_root() -> Path:
 
 # Get project root once at module load
 PROJECT_ROOT = find_project_root()
+DEFAULT_PROJECTS_DIR = Path("/Volumes/edy - 数据/ai/workspace/gencodes")
 
 
 class Settings(BaseModel):
@@ -43,8 +44,11 @@ class Settings(BaseModel):
     )
     
     # Use project root relative paths
-    projects_root: str = os.getenv("PROJECTS_ROOT", str(PROJECT_ROOT / "data" / "projects"))
-    projects_root_host: str = os.getenv("PROJECTS_ROOT_HOST", os.getenv("PROJECTS_ROOT", str(PROJECT_ROOT / "data" / "projects")))
+    projects_root: str = os.getenv("PROJECTS_ROOT", str(DEFAULT_PROJECTS_DIR))
+    projects_root_host: str = os.getenv(
+        "PROJECTS_ROOT_HOST",
+        os.getenv("PROJECTS_ROOT", str(DEFAULT_PROJECTS_DIR)),
+    )
     
     preview_port_start: int = int(os.getenv("PREVIEW_PORT_START", "3100"))
     preview_port_end: int = int(os.getenv("PREVIEW_PORT_END", "3999"))

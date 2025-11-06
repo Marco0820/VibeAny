@@ -28,17 +28,18 @@ def scaffold_nextjs_minimal(repo_path: str) -> None:
     try:
         # Create Next.js app with TypeScript and Tailwind CSS
         cmd = [
-            "npx", 
-            "create-next-app@latest", 
+            "npx",
+            "create-next-app@14.2.10",
             project_name,
             "--typescript",
-            "--tailwind", 
+            "--tailwind",
             "--eslint",
             "--app",
-            "--import-alias", "@/*",
+            "--import-alias",
+            "@/*",
             "--use-npm",
             "--skip-install",  # We'll install dependencies later (handled by backend)
-            "--yes"            # Auto-accept all prompts
+            "--yes",           # Auto-accept all prompts
         ]
         
         # Set environment for non-interactive mode
