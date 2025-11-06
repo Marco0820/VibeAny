@@ -9,7 +9,7 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { Check, Globe, Menu } from "lucide-react";
+import { Check, Globe } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -208,100 +208,6 @@ const FAQ_ITEMS = [
   },
 ];
 
-const headerShellStyle = {
-  WebkitTextSizeAdjust: "100%",
-  tabSize: 4,
-  fontFamily:
-    "Inter,ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji",
-  fontFeatureSettings: "normal",
-  fontVariationSettings: "normal",
-  WebkitTapHighlightColor: "transparent",
-  boxSizing: "border-box",
-  border: "0 solid #bbb",
-  scrollbarColor: "auto",
-  scrollbarWidth: "auto",
-  position: "fixed",
-  left: 0,
-  right: 0,
-  top: 0,
-  zIndex: 50,
-  display: "flex",
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "center",
-  paddingLeft: "40px",
-  paddingRight: "40px",
-  paddingTop: "40px",
-} as CSSProperties;
-
-const headerMenuStyle = {
-  WebkitTextSizeAdjust: "100%",
-  tabSize: 4,
-  fontFeatureSettings: "normal",
-  fontVariationSettings: "normal",
-  WebkitTapHighlightColor: "transparent",
-  "--tablet-screen-min": "640px",
-  "--desktop-screen-min": "1232px",
-  "--keyboard-offset": "0px",
-  "--fa-style-family-brands": '"Font Awesome 6 Brands"',
-  "--fa-font-brands": 'normal 400 1em/1 "Font Awesome 6 Brands"',
-  "--fa-style-family-duotone": '"Font Awesome 6 Duotone"',
-  "--fa-font-duotone": 'normal 900 1em/1 "Font Awesome 6 Duotone"',
-  "--fa-font-light": 'normal 300 1em/1 "Font Awesome 6 Pro"',
-  "--fa-font-regular": 'normal 400 1em/1 "Font Awesome 6 Pro"',
-  "--fa-font-solid": 'normal 900 1em/1 "Font Awesome 6 Pro"',
-  "--fa-style-family-classic": '"Font Awesome 6 Pro"',
-  "--fa-font-thin": 'normal 100 1em/1 "Font Awesome 6 Pro"',
-  "--fa-font-sharp-solid": 'normal 900 1em/1 "Font Awesome 6 Sharp"',
-  "--fa-style-family-sharp": '"Font Awesome 6 Sharp"',
-  "--fa-font-sharp-regular": 'normal 400 1em/1 "Font Awesome 6 Sharp"',
-  lineHeight: "inherit",
-  "--font-instrument-serif":
-    '"__Instrument_Serif_315a98","__Instrument_Serif_Fallback_315a98"',
-  "--font-instrument-sans":
-    '"__Instrument_Sans_e986a4","__Instrument_Sans_Fallback_e986a4"',
-  "--tw-border-spacing-x": "0",
-  "--tw-border-spacing-y": "0",
-  "--tw-translate-x": "0",
-  "--tw-translate-y": "0",
-  "--tw-rotate": "0",
-  "--tw-skew-x": "0",
-  "--tw-skew-y": "0",
-  "--tw-scale-x": "1",
-  "--tw-scale-y": "1",
-  "--tw-ring-offset-width": "0px",
-  "--tw-ring-offset-color": "#fff",
-  "--tw-ring-color": "rgba(117,170,211,.5)",
-  "--tw-ring-offset-shadow": "0 0 #0000",
-  "--tw-ring-shadow": "0 0 #0000",
-  "--tw-shadow": "0 0 #0000",
-  display: "flex",
-  width: "100%",
-  maxWidth: "1126px",
-  flexDirection: "row",
-  alignItems: "center",
-  justifyContent: "space-between",
-  borderRadius: "9999px",
-  borderWidth: "1px",
-  borderColor: "hsla(0,0%,98%,.2)",
-  backgroundColor: "hsla(0,0%,95%,.4)",
-  backdropFilter:
-    "blur(16px) var(--tw-backdrop-brightness) var(--tw-backdrop-contrast) var(--tw-backdrop-grayscale) var(--tw-backdrop-hue-rotate) var(--tw-backdrop-invert) var(--tw-backdrop-opacity) var(--tw-backdrop-saturate) var(--tw-backdrop-sepia)",
-  transitionProperty:
-    "color,background-color,border-color,text-decoration-color,fill,stroke",
-  transitionTimingFunction: "cubic-bezier(0,0,.2,1)",
-  transitionDuration: "1s",
-  animationDuration: "1s",
-  fontFamily: "var(--font-instrument-serif)",
-  fontStyle: "normal",
-  gap: "16px",
-  paddingLeft: "18px",
-  paddingRight: "18px",
-  height: "90px",
-  paddingTop: "0px",
-  paddingBottom: "0px",
-} as CSSProperties;
-
 const promptBoxStyle: CSSProperties = {
   width: "100%",
   height: "100%",
@@ -345,8 +251,6 @@ export function MarketingLandingPage() {
   const [promptValue, setPromptValue] = useState(
     "Generate a workout planner for beginners",
   );
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
   const navigateToVibeAny = useCallback(
     (value?: string) => {
       const targetValue = (value ?? promptValue).trim();
@@ -383,156 +287,6 @@ export function MarketingLandingPage() {
 
   return (
     <div className="relative min-h-screen overflow-hidden text-slate-900">
-      <header
-        className="fixed right-0 left-0 z-[50] flex flex-row items-center justify-center px-[20px] pt-[20px] sm:px-[30px] sm:pt-[30px] tablet:px-[40px] tablet:pt-[40px]"
-        style={headerShellStyle}
-      >
-        <div
-          className="flex h-[90px] w-full max-w-[1126px] flex-row items-center justify-between gap-[12px] rounded-full border border-comeback-gray-25/20 px-[18px] backdrop-blur-lg [font-family:var(--font-instrument-serif)] [font-style:normal] tablet:gap-[16px] transition-colors duration-1000 bg-comeback-gray-50/40"
-          style={headerMenuStyle}
-        >
-          <Link href="/" aria-label="Anything homepage" target="_blank" rel="noopener noreferrer">
-            <Image
-              alt="Anything Logo"
-              src="/vibe_logo.png"
-              width={100}
-              height={120}
-              className="ml-[10px] h-[120px] w-[100px] tablet:ml-[12px] tablet:h-[120px] tablet:w-[100px]"
-              style={{ color: "transparent", WebkitTouchCallout: "none" }}
-              priority
-            />
-          </Link>
-
-          <div className="hidden w-fit items-center justify-center gap-[12px] [font-family:var(--font-instrument-sans)] tablet:flex tablet:gap-[16px] desktop:gap-[24px]">
-            <Link
-              className="tracking-normal font-semibold [font-family:var(--font-instrument-sans)] desktop:text-[18px] tablet:text-[16px] text-[15px] text-white"
-              href="/pricing"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Pricing
-            </Link>
-            <Link
-              className="tracking-normal font-semibold [font-family:var(--font-instrument-sans)] desktop:text-[18px] tablet:text-[16px] text-[15px] text-white"
-              href="/AppTemplates"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              AppTemplates
-            </Link>
-            <a
-              target="_blank"
-              className="tracking-normal font-semibold [font-family:var(--font-instrument-sans)] desktop:text-[18px] tablet:text-[16px] text-[15px] text-white whitespace-nowrap"
-              href="https://create.xyz/docs"
-              rel="noopener noreferrer"
-            >
-              Docs
-            </a>
-            <Link
-              className="tracking-normal font-semibold [font-family:var(--font-instrument-sans)] desktop:text-[18px] tablet:text-[16px] text-[15px] text-white"
-              href="/blog"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Blog
-            </Link>
-            <Link
-              className="tracking-normal font-semibold [font-family:var(--font-instrument-sans)] desktop:text-[18px] tablet:text-[16px] text-[15px] text-white"
-              href="/login"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Login
-            </Link>
-          </div>
-
-          <Link
-            className="flex-row items-center justify-center gap-[4px] font-semibold outline-none transition-colors border-[1px] hover:bg-comeback-gray-700 active:bg-comeback-gray-600 border-transparent text-white p-[12px] hidden whitespace-nowrap rounded-full bg-comeback-gray-900 px-[10px] py-[6px] text-[13px] leading-[120%] tracking-normal [font-family:var(--font-instrument-sans)] [&>span]:[font-family:var(--font-instrument-sans)!important] tablet:block tablet:px-[12px] tablet:py-[8px] tablet:text-[14px] desktop:px-[16px] desktop:py-[10px] desktop:text-[16px] cursor-pointer"
-            href="/signup"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Get started
-          </Link>
-
-          <div className="tablet:hidden">
-            <button
-              type="button"
-              onClick={() => setIsMenuOpen((prev) => !prev)}
-              aria-haspopup="dialog"
-              aria-expanded={isMenuOpen}
-              aria-controls="mobile-top-menu"
-            >
-              <Menu className="styles_trigger__DqyHs mr-[10px] text-white" />
-            </button>
-          </div>
-        </div>
-      </header>
-
-      {isMenuOpen ? (
-        <div
-          id="mobile-top-menu"
-          className="fixed inset-x-0 top-[72px] z-[60] mx-auto mt-3 w-11/12 max-w-sm rounded-3xl border border-white/20 bg-comeback-gray-900/95 p-6 text-white shadow-2xl tablet:hidden"
-        >
-          <nav className="flex flex-col gap-4 text-base [font-family:var(--font-instrument-sans)]">
-            <Link
-              className="whitespace-nowrap text-lg font-semibold"
-              href="/pricing"
-              onClick={() => setIsMenuOpen(false)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Pricing
-            </Link>
-            <a
-              href="https://create.xyz/docs"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="whitespace-nowrap text-lg font-semibold"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              Docs
-            </a>
-            <Link
-              className="whitespace-nowrap text-lg font-semibold"
-              href="/blog"
-              onClick={() => setIsMenuOpen(false)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Blog
-            </Link>
-            <Link
-              className="whitespace-nowrap text-lg font-semibold"
-              href="/careers"
-              onClick={() => setIsMenuOpen(false)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Careers
-            </Link>
-            <Link
-              className="whitespace-nowrap text-lg font-semibold"
-              href="/login"
-              onClick={() => setIsMenuOpen(false)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Login
-            </Link>
-            <Link
-              href="/signup"
-              className="mt-2 inline-flex items-center justify-center rounded-full bg-white px-4 py-2 font-medium text-comeback-gray-900"
-              onClick={() => setIsMenuOpen(false)}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Get started
-            </Link>
-          </nav>
-        </div>
-      ) : null}
-
       <div className="relative flex min-h-screen flex-col">
         <main className="flex-1">
           <section className="relative pt-40 pb-24 px-4 sm:px-6 lg:px-8 text-center bg-[url('/BG%20-%20Tablet.jpg')] bg-cover bg-top">
