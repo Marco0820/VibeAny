@@ -407,7 +407,7 @@ def start_preview_process(project_id: str, repo_path: str, port: Optional[int] =
         # Start development server
         print(f"Starting Next.js dev server for project {project_id} on port {port}...")
         process = subprocess.Popen(
-            ["npm", "run", "dev", "--", "--port", str(port), "--hostname", "127.0.0.1"],
+            ["npm", "run", "dev", "--", "--port", str(port), "--hostname", "0.0.0.0"],
             cwd=repo_path,
             env=env,
             stdout=subprocess.PIPE,

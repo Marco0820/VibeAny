@@ -52,6 +52,7 @@ class Settings(BaseModel):
     
     preview_port_start: int = int(os.getenv("PREVIEW_PORT_START", "3100"))
     preview_port_end: int = int(os.getenv("PREVIEW_PORT_END", "3999"))
+    preview_public_base_url: Optional[str] = os.getenv("PREVIEW_PUBLIC_BASE_URL")
 
     frontend_base_url: str = os.getenv("FRONTEND_BASE_URL", "http://localhost:3000")
     allowed_origins: list[str] = [

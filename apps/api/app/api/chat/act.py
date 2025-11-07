@@ -28,6 +28,7 @@ from app.services.local_runtime import (
 from app.core.websocket.manager import manager
 from app.core.terminal_ui import ui
 from app.services.points_service import PointsService, InsufficientPointsError
+from app.core.config import settings
 
 
 router = APIRouter()
@@ -104,6 +105,19 @@ async def ensure_preview_ready(
         return None
 
     preview_url = f"http://localhost:{port}"
+    public_base = settings.preview_public_base_url
+    if public_base:
+        normalized = public_base.rstrip("/")
+        try:
+            if "{" in normalized and "}" in normalized:
+                preview_url = normalized.format(
+                    port=port,
+                    project_id=project_id,
+                )
+            else:
+                preview_url = f"{normalized}/{project_id}"
+        except Exception as exc:  # noqa: BLE001
+            ui.warning(f"Failed to format preview URL using '{public_base}': {exc}", "Preview")
 
     project = db.get(Project, project_id)
     if project:
