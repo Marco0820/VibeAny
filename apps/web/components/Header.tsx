@@ -17,7 +17,7 @@ export default function Header() {
   // Hide header on chat pages and use marketing header on marketing-focused routes
   const isChatPage = pathname.includes('/chat');
   const isLandingHeaderRoute =
-    pathname === '/' || pathname === '/vibeany' || pathname === '/pricing';
+    pathname === '/' || pathname === '/pricing';
   const isMarketingPage = pathname === '/' || isLandingHeaderRoute;
 
   if (isChatPage) {

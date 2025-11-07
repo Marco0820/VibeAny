@@ -9,9 +9,11 @@ import {
   useState,
   type CSSProperties,
 } from "react";
+import { useRouter } from "next/navigation";
 import { Check, Globe } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { getApiBase } from "@/lib/env";
 import {
   Accordion,
   AccordionContent,
@@ -247,42 +249,91 @@ function StartArrowIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+function generateUUID() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export function MarketingLandingPage() {
+  const router = useRouter();
+  const API_BASE = getApiBase();
   const [promptValue, setPromptValue] = useState(
     "Generate a workout planner for beginners",
   );
-  const navigateToVibeAny = useCallback(
-    (value?: string) => {
-      const targetValue = (value ?? promptValue).trim();
-
-      if (typeof window !== "undefined") {
-        try {
-          if (targetValue) {
-            window.sessionStorage.setItem("vibeany:landingPrompt", targetValue);
-            window.sessionStorage.setItem("vibeany:autoSubmit", "true");
-          } else {
-            window.sessionStorage.removeItem("vibeany:landingPrompt");
-            window.sessionStorage.removeItem("vibeany:autoSubmit");
-          }
-        } catch (error) {
-          console.warn(
-            "Failed to persist landing prompt for VibeAny navigation",
-            error,
-          );
-        }
-
-        window.location.href = "/vibeany";
-      }
-    },
-    [promptValue],
+  const [isCreatingProject, setIsCreatingProject] = useState(false);
+  const [creationMessage, setCreationMessage] = useState(
+    "Preparing your workspace…",
   );
 
   const handlePromptSubmit = useCallback(
-    (event: FormEvent<HTMLFormElement>) => {
+    async (event: FormEvent<HTMLFormElement>) => {
       event.preventDefault();
-      navigateToVibeAny();
+      const trimmed = promptValue.trim();
+      if (!trimmed) {
+        return;
+      }
+
+      const projectId = generateUUID();
+      const projectName =
+        trimmed.length > 48 ? `${trimmed.slice(0, 45)}…` : trimmed || "New Project";
+
+      setIsCreatingProject(true);
+      setCreationMessage("Creating your app…");
+
+      if (typeof window !== "undefined") {
+        window.sessionStorage.setItem("vibeany:landingPrompt", trimmed);
+        window.sessionStorage.setItem("vibeany:autoSubmit", "true");
+      }
+
+      try {
+        const response = await fetch(`${API_BASE}/api/projects`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            project_id: projectId,
+            name: projectName,
+            description: trimmed,
+            initial_prompt: trimmed,
+            preferred_cli: "remote",
+            fallback_enabled: true,
+            selected_model: "gpt-5",
+            cli_settings: {
+              remote: {
+                model: "gpt-5",
+              },
+            },
+          }),
+        });
+
+        if (!response.ok) {
+          const detail = await response.text();
+          setCreationMessage(
+            detail || "Failed to create project. Please try again shortly.",
+          );
+          setTimeout(() => setIsCreatingProject(false), 2000);
+          return;
+        }
+
+        setCreationMessage("Setting up environment…");
+        const query = new URLSearchParams({
+          initial_prompt: trimmed,
+          cli: "remote",
+          model: "gpt-5",
+        });
+        router.push(`/${projectId}/chat?${query.toString()}`);
+      } catch (error) {
+        console.error("Failed to create project from landing:", error);
+        setCreationMessage("Network error. Please try again.");
+        setTimeout(() => setIsCreatingProject(false), 2000);
+      }
     },
-    [navigateToVibeAny],
+    [promptValue, router],
   );
 
   return (

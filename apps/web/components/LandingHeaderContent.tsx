@@ -182,7 +182,7 @@ export function LandingHeaderContent({ currentPath }: LandingHeaderContentProps)
         <div className="hidden w-fit items-center justify-center gap-[12px] [font-family:var(--font-instrument-sans)] tablet:flex tablet:gap-[16px] desktop:gap-[24px]">
           {navLinks.map((link) => {
             const commonClasses =
-              'tracking-normal font-semibold [font-family:var(--font-instrument-sans)] text-[23px] text-white';
+              'tracking-normal font-semibold [font-family:var(--font-instrument-sans)] text-[20px] text-white';
 
             if (link.external) {
               return (
@@ -292,7 +292,7 @@ export function LandingHeaderContent({ currentPath }: LandingHeaderContentProps)
                   href={link.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="whitespace-nowrap text-[23px] font-semibold"
+                  className="whitespace-nowrap text-[20px] font-semibold"
                   onClick={(event: ReactMouseEvent<HTMLAnchorElement>) => handleNavClick(event, link)}
                 >
                   {link.label}
@@ -301,7 +301,7 @@ export function LandingHeaderContent({ currentPath }: LandingHeaderContentProps)
                 <Link
                   key={link.label}
                   href={link.href}
-                  className="whitespace-nowrap text-[23px] font-semibold"
+                  className="whitespace-nowrap text-[20px] font-semibold"
                   aria-current={isActiveLink(link.href, currentPath) ? 'page' : undefined}
                   onClick={(event: ReactMouseEvent<HTMLAnchorElement>) => handleNavClick(event, link)}
                   target="_blank"

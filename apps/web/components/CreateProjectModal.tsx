@@ -31,79 +31,16 @@ interface CLIOption {
 
 const CLI_OPTIONS: CLIOption[] = [
   {
-    id: 'claude',
-    name: 'Claude Code',
-    icon: '🤖',
-    description: 'Anthropic Claude with advanced reasoning',
-    color: 'from-orange-500 to-red-600',
-    downloadUrl: 'https://github.com/anthropics/claude-code',
-    installCommand: 'npm install -g @anthropic-ai/claude-code',
+    id: 'remote',
+    name: 'Cloud AI',
+    icon: '☁️',
+    description: 'Use VibeAny’s managed cloud agent — no local CLI required.',
+    color: 'from-sky-500 to-indigo-600',
     models: [
-      { id: 'claude-sonnet-4', name: 'Claude Sonnet 4', description: 'Superior coding with 1M context window', supportsImages: true },
-      { id: 'claude-opus-4.1', name: 'Claude Opus 4.1', description: 'Most intelligent model for complex coding tasks', supportsImages: true },
+      { id: 'gpt-5', name: 'GPT-5', description: 'Default cloud model with extended context', supportsImages: true }
     ],
-    features: ['Advanced reasoning', 'Code generation', '1M context window']
-  },
-  {
-    id: 'cursor',
-    name: 'Cursor Agent',
-    icon: '🎯',
-    description: 'AI-powered code editor with frontier models',
-    color: 'from-[#DE7356] to-[#c95940]',
-    downloadUrl: 'https://cursor.com',
-    installCommand: 'Download from cursor.com',
-    models: [
-      { id: 'gpt-5', name: 'GPT-5', description: 'Best coding model with expert-level intelligence', supportsImages: true },
-      { id: 'claude-sonnet-4', name: 'Claude Sonnet 4', description: 'State-of-the-art coding capabilities', supportsImages: true },
-      { id: 'claude-opus-4.1', name: 'Claude Opus 4.1', description: 'Most powerful model for complex tasks', supportsImages: true },
-    ],
-    features: ['IDE integration', 'Frontier models', 'Real-time coding']
-  },
-  {
-    id: 'qwen',
-    name: 'Qwen Code',
-    icon: '🐉',
-    description: 'Alibaba Qwen with agentic coding (Coming Soon)',
-    color: 'from-red-500 to-pink-600',
-    downloadUrl: 'https://github.com/QwenLM/qwen-code',
-    installCommand: 'npm install -g @qwen-code/qwen-code',
-    models: [
-      { id: 'qwen3-coder-480b', name: 'Qwen3-Coder 480B', description: 'Most agentic coding model with 1M context', supportsImages: true },
-      { id: 'qwen2.5-coder-32b', name: 'Qwen2.5-Coder 32B', description: 'SOTA open-source coding model', supportsImages: false },
-    ],
-    features: ['Agentic coding', '1M context window', 'Apache 2.0 license'],
-    enabled: false
-  },
-  {
-    id: 'gemini',
-    name: 'Gemini CLI',
-    icon: '💎',
-    description: 'Google Gemini with thinking capabilities (Coming Soon)',
-    color: 'from-[#DE7356] to-[#e88a6f]',
-    downloadUrl: 'https://github.com/google-gemini/gemini-cli',
-    installCommand: 'npm install -g @google/generative-ai-cli',
-    models: [
-      { id: 'gemini-2.5-pro', name: 'Gemini 2.5 Pro', description: 'State-of-the-art thinking model with adaptive reasoning', supportsImages: true },
-      { id: 'gemini-2.5-flash', name: 'Gemini 2.5 Flash', description: 'Fast and versatile multimodal model', supportsImages: true },
-    ],
-    features: ['Adaptive thinking', 'Web search', '1M context window'],
-    enabled: false
-  },
-  {
-    id: 'codex',
-    name: 'Codex CLI',
-    icon: '🔮',
-    description: 'OpenAI Codex with GPT-5 integration (Coming Soon)',
-    color: 'from-green-500 to-teal-600',
-    downloadUrl: 'https://github.com/openai/codex',
-    installCommand: 'npm install -g openai-codex-cli',
-    models: [
-      { id: 'gpt-5', name: 'GPT-5', description: 'Smartest coding model with built-in thinking', supportsImages: true },
-      { id: 'gpt-4.1', name: 'GPT-4.1', description: 'Major improvements in coding and long-context', supportsImages: true },
-      { id: 'o4-mini', name: 'OpenAI o4-mini', description: 'Reasoning model for complex problems', supportsImages: false },
-    ],
-    features: ['Built-in thinking', '1M context tokens', 'Open-source CLI'],
-    enabled: false
+    features: ['No installation required', 'Runs securely in the cloud', 'Optimized for VibeAny projects'],
+    enabled: true
   }
 ];
 
@@ -125,8 +62,8 @@ interface CreateProjectModalProps {
 export default function CreateProjectModal({ open, onClose, onCreated, onOpenGlobalSettings }: CreateProjectModalProps) {
   const [projectName, setProjectName] = useState('');
   const [prompt, setPrompt] = useState('');
-  const [selectedCLI, setSelectedCLI] = useState<string>('claude');
-  const [selectedModel, setSelectedModel] = useState<string>('claude-opus-4.1');
+  const [selectedCLI, setSelectedCLI] = useState<string>('remote');
+  const [selectedModel, setSelectedModel] = useState<string>('gpt-5');
   // Fallback is removed but kept for backward compatibility
   const [fallbackEnabled, setFallbackEnabled] = useState(false);
   const [useDefaultSettings, setUseDefaultSettings] = useState(true);
@@ -155,90 +92,33 @@ export default function CreateProjectModal({ open, onClose, onCreated, onOpenGlo
 
   const loadGlobalSettings = async () => {
     try {
-      // Load both global settings and CLI status in parallel
-      const [settingsResponse, statusResponse] = await Promise.all([
+      const [settingsResponse, statusResponse] = await Promise.allSettled([
         fetchWithAuth(`${API_BASE}/api/settings/global`),
-        fetchWithAuth(`${API_BASE}/api/settings/cli-status`)
+        fetchWithAuth(`${API_BASE}/api/settings/cli-status`),
       ]);
 
-      let settings = null;
-      let cliStatusData = null;
-
-      if (settingsResponse.ok) {
-        settings = await settingsResponse.json();
-        setGlobalSettings(settings);
-      }
-
-      if (statusResponse.ok) {
-        cliStatusData = await statusResponse.json();
-        setCLIStatus(cliStatusData);
-      }
-
-      if (settings) {
-        // Filter CLIs that are both enabled and installed
-        const enabled = CLI_OPTIONS.filter(cli => {
-          const isEnabled = settings.cli_settings?.[cli.id]?.enabled !== false;
-          const isInstalled = cliStatusData?.[cli.id]?.installed !== false; // Allow if no status data
-          const isAvailable = cli.enabled !== false; // Check CLI-level enabled flag
-          return isEnabled && isInstalled && isAvailable;
-        });
-        
-        setEnabledCLIs(enabled.length > 0 ? enabled : CLI_OPTIONS);
-        
-        // Apply global defaults
-        const defaultCLI = settings.default_cli || 'claude';
-        const availableDefaultCLI = enabled.find(cli => cli.id === defaultCLI);
-        
-        // Use default CLI if it's available, otherwise use first available CLI
-        if (availableDefaultCLI) {
-          setSelectedCLI(defaultCLI);
-        } else if (enabled.length > 0) {
-          setSelectedCLI(enabled[0].id);
-        } else {
-          setSelectedCLI('claude');
-        }
-        
-        setFallbackEnabled(settings.fallback_enabled ?? true);
-        
-        // Set default model for the selected CLI
-        const selectedCLIId = availableDefaultCLI ? defaultCLI : (enabled[0]?.id || 'claude');
-        const cliSettings = settings.cli_settings?.[selectedCLIId];
-        if (cliSettings?.model) {
-          setSelectedModel(cliSettings.model);
-          console.log('Using global settings model:', cliSettings.model, 'for CLI:', selectedCLIId);
-        } else {
-          // Set first available model
-          const selectedCLIObj = enabled.find(cli => cli.id === selectedCLIId) || enabled[0];
-          if (selectedCLIObj?.models.length) {
-            setSelectedModel(selectedCLIObj.models[0].id);
-            console.log('Using first available model:', selectedCLIObj.models[0].id, 'for CLI:', selectedCLIId);
-          }
-        }
+      if (settingsResponse.status === 'fulfilled' && settingsResponse.value.ok) {
+        const data = await settingsResponse.value.json();
+        setGlobalSettings(data);
+        setFallbackEnabled(data.fallback_enabled ?? true);
       } else {
-        console.error('Failed to load global settings:', settingsResponse.statusText);
-        // Use available CLIs as fallback, filter by installation status and enabled flag
-        const available = cliStatusData ? CLI_OPTIONS.filter(cli => 
-          cliStatusData[cli.id]?.installed !== false && cli.enabled !== false
-        ) : CLI_OPTIONS.filter(cli => cli.enabled !== false);
-        
-        setEnabledCLIs(available);
-        const firstCLI = available[0]?.id || 'claude';
-        setSelectedCLI(firstCLI);
-        const firstModel = available[0]?.models[0]?.id || 'claude-opus-4.1';
-        setSelectedModel(firstModel);
         setFallbackEnabled(true);
-        console.log('Fallback: Selected CLI:', firstCLI, 'Model:', firstModel);
+      }
+
+      if (statusResponse.status === 'fulfilled' && statusResponse.value.ok) {
+        const cliStatusData = await statusResponse.value.json();
+        setCLIStatus(cliStatusData);
+      } else {
+        setCLIStatus(null);
       }
     } catch (error) {
       console.error('Failed to load global settings:', error);
-      // Use available CLIs as fallback
-      setEnabledCLIs(CLI_OPTIONS.filter(cli => cli.enabled !== false));
-      const fallbackCLI = 'claude';
-      const fallbackModel = 'claude-opus-4.1';
-      setSelectedCLI(fallbackCLI);
-      setSelectedModel(fallbackModel);
+      setCLIStatus(null);
       setFallbackEnabled(true);
-      console.log('Error fallback: Selected CLI:', fallbackCLI, 'Model:', fallbackModel);
+    } finally {
+      setEnabledCLIs(CLI_OPTIONS);
+      setSelectedCLI('remote');
+      setSelectedModel('gpt-5');
     }
   };
 
@@ -345,16 +225,9 @@ export default function CreateProjectModal({ open, onClose, onCreated, onOpenGlo
     setInitializingProjectId(null);
     
     // Reset to global defaults or fallback
-    if (globalSettings) {
-      setSelectedCLI(globalSettings.default_cli || 'claude');
-      setFallbackEnabled(globalSettings.fallback_enabled ?? true);
-      const cliSettings = globalSettings.cli_settings?.[globalSettings.default_cli || 'claude'];
-      setSelectedModel(cliSettings?.model || 'claude-opus-4.1');
-    } else {
-      setSelectedCLI('claude');
-      setSelectedModel('claude-opus-4.1');
-      setFallbackEnabled(true);
-    }
+    setSelectedCLI('remote');
+    setSelectedModel('gpt-5');
+    setFallbackEnabled(true);
     
     // Close modal and navigate to chat with initial prompt
     onClose();
@@ -396,14 +269,8 @@ export default function CreateProjectModal({ open, onClose, onCreated, onOpenGlo
     if (!projectName.trim() || !prompt.trim()) return;
     
     // Determine CLI and model based on useDefaultSettings
-    let finalCLI = selectedCLI;
-    let finalModel = selectedModel;
-    
-    if (useDefaultSettings && globalSettings) {
-      finalCLI = globalSettings.default_cli || 'claude';
-      const cliSettings = globalSettings.cli_settings?.[finalCLI];
-      finalModel = cliSettings?.model || selectedModel || 'claude-opus-4.1';
-    }
+    let finalCLI = 'remote';
+    let finalModel = selectedModel || 'gpt-5';
     
     if (!finalCLI || !finalModel) {
       console.error('Missing CLI or model selection:', { finalCLI, finalModel, useDefaultSettings, globalSettings });

@@ -116,7 +116,7 @@ export default function HomePage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [prompt, setPrompt] = useState('');
   const [shouldAutoSubmit, setShouldAutoSubmit] = useState(false);
-  const [selectedAssistant, setSelectedAssistant] = useState('codex');
+  const [selectedAssistant, setSelectedAssistant] = useState('remote');
   const [selectedModel, setSelectedModel] = useState('gpt-5');
   const [usingGlobalDefaults, setUsingGlobalDefaults] = useState(true);
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -135,6 +135,9 @@ export default function HomePage() {
   
   // Define models for each assistant statically
   const modelsByAssistant = {
+    remote: [
+      { id: 'gpt-5', name: 'GPT-5' }
+    ],
     codex: [
       { id: 'gpt-5', name: 'GPT-5' }
     ],
@@ -196,18 +199,14 @@ export default function HomePage() {
     if (!usingGlobalDefaults || !isInitialLoad) return;
     
     const preferredCLI = globalSettings?.default_cli;
-    const cli = preferredCLI && !requiresAssistantUpgrade(preferredCLI) ? preferredCLI : 'codex';
+    const cli = preferredCLI && !requiresAssistantUpgrade(preferredCLI) ? preferredCLI : 'remote';
     setSelectedAssistant(cli);
     const modelFromGlobal = globalSettings?.cli_settings?.[cli]?.model;
     if (modelFromGlobal) {
       setSelectedModel(modelFromGlobal);
     } else {
       // Fallback per CLI
-      if (cli === 'claude') setSelectedModel('claude-sonnet-4');
-      else if (cli === 'cursor') setSelectedModel('gpt-5');
-      else if (cli === 'codex') setSelectedModel('gpt-5');
-      else if (cli === 'qwen') setSelectedModel('qwen3-coder-plus');
-      else if (cli === 'gemini') setSelectedModel('gemini-2.5-pro');
+      setSelectedModel(defaultModelForCli(cli));
     }
   }, [globalSettings, usingGlobalDefaults, isInitialLoad]);
   
@@ -278,7 +277,7 @@ export default function HomePage() {
       // Initialize with checking status
       const checkingStatus: { [key: string]: { installed: boolean; checking: boolean; } } = {};
       assistantOptions.forEach(cli => {
-        checkingStatus[cli.id] = { installed: false, checking: true };
+        checkingStatus[cli.id] = { installed: cli.id === 'remote', checking: true };
       });
       setCLIStatus(checkingStatus);
       
@@ -292,9 +291,9 @@ export default function HomePage() {
           const fallbackStatus: { [key: string]: { installed: boolean; checking: boolean; error: string; } } = {};
           assistantOptions.forEach(cli => {
             fallbackStatus[cli.id] = {
-              installed: cli.id === 'codex', // Codex CLI available without upgrade
+              installed: cli.id === 'remote',
               checking: false,
-              error: 'Unable to check installation status'
+              error: cli.id === 'remote' ? '' : 'Unavailable in this environment'
             };
           });
           setCLIStatus(fallbackStatus);
@@ -305,7 +304,7 @@ export default function HomePage() {
         const errorStatus: { [key: string]: { installed: boolean; checking: boolean; error: string; } } = {};
         assistantOptions.forEach(cli => {
           errorStatus[cli.id] = {
-            installed: cli.id === 'codex', // Codex CLI available without upgrade
+            installed: cli.id === 'remote',
             checking: false,
             error: 'Network error'
           };
@@ -824,14 +823,11 @@ export default function HomePage() {
 
 
   function requiresAssistantUpgrade(assistantId: string) {
-    return assistantId !== 'codex';
+    return assistantId !== 'remote';
   }
 
   function requiresModelUpgrade(assistantId: string, modelId: string) {
-    if (assistantId === 'codex') {
-      return false;
-    }
-    return true;
+    return assistantId !== 'remote';
   }
 
   // Update models when assistant changes
@@ -842,29 +838,13 @@ export default function HomePage() {
       return;
     }
 
-    // Don't allow selecting uninstalled CLIs
-    if (!cliStatus[assistant]?.installed) return;
-    
     if (process.env.NODE_ENV !== 'production') {
       console.info('🔧 Assistant changing from', selectedAssistant, 'to', assistant);
     }
     setUsingGlobalDefaults(false);
     setIsInitialLoad(false);
     setSelectedAssistant(assistant);
-    
-    // Set default model for each assistant
-    if (assistant === 'claude') {
-      setSelectedModel('claude-sonnet-4');
-    } else if (assistant === 'cursor') {
-      setSelectedModel('gpt-5');
-    } else if (assistant === 'codex') {
-      setSelectedModel('gpt-5');
-    } else if (assistant === 'qwen') {
-      setSelectedModel('qwen3-coder-plus');
-    } else if (assistant === 'gemini') {
-      setSelectedModel('gemini-2.5-pro');
-    }
-    
+    setSelectedModel(defaultModelForCli(assistant));
     setShowAssistantDropdown(false);
   };
 
@@ -881,11 +861,7 @@ export default function HomePage() {
   };
 
   const assistantOptions = [
-    { id: 'codex', name: 'Codex CLI', icon: '/oai.png' },
-    { id: 'claude', name: 'Claude Code', icon: '/claude.png' },
-    { id: 'cursor', name: 'Cursor Agent', icon: '/cursor.png' },
-    { id: 'gemini', name: 'Gemini CLI', icon: '/gemini.png' },
-    { id: 'qwen', name: 'Qwen Coder', icon: '/qwen.png' }
+    { id: 'remote', name: 'Cloud AI', icon: '/oai.png' },
   ];
 
   return (
@@ -1093,6 +1069,7 @@ export default function HomePage() {
                                    project.preferred_cli === 'cursor' ? 'Cursor' : 
                                    project.preferred_cli === 'qwen' ? 'Qwen' : 
                                    project.preferred_cli === 'gemini' ? 'Gemini' : 
+                                   project.preferred_cli === 'remote' ? 'Cloud AI' : 
                                    project.preferred_cli === 'codex' ? 'Codex' : 
                                    project.preferred_cli}
                                 </span>
@@ -1322,12 +1299,12 @@ export default function HomePage() {
                     <div className="w-4 h-4 rounded overflow-hidden">
                       <img 
                         src={selectedAssistant === 'claude' ? '/claude.png' : selectedAssistant === 'cursor' ? '/cursor.png' : selectedAssistant === 'qwen' ? '/qwen.png' : selectedAssistant === 'gemini' ? '/gemini.png' : '/oai.png'} 
-                        alt={selectedAssistant === 'claude' ? 'Claude' : selectedAssistant === 'cursor' ? 'Cursor' : selectedAssistant === 'qwen' ? 'Qwen' : selectedAssistant === 'gemini' ? 'Gemini' : 'Codex'}
+                        alt={selectedAssistant === 'claude' ? 'Claude' : selectedAssistant === 'cursor' ? 'Cursor' : selectedAssistant === 'qwen' ? 'Qwen' : selectedAssistant === 'gemini' ? 'Gemini' : 'Cloud AI'}
                         className="w-full h-full object-contain"
                       />
                     </div>
                     <span className="hidden md:flex text-sm font-medium">
-                      {selectedAssistant === 'claude' ? 'Claude Code' : selectedAssistant === 'cursor' ? 'Cursor Agent' : selectedAssistant === 'qwen' ? 'Qwen Coder' : selectedAssistant === 'gemini' ? 'Gemini CLI' : 'Codex CLI'}
+                      {selectedAssistant === 'claude' ? 'Claude Code' : selectedAssistant === 'cursor' ? 'Cursor Agent' : selectedAssistant === 'qwen' ? 'Qwen Coder' : selectedAssistant === 'gemini' ? 'Gemini CLI' : 'Cloud AI'}
                     </span>
                     <ChevronDown className="shrink-0 h-3 w-3" />
                   </button>
@@ -1395,19 +1372,13 @@ export default function HomePage() {
                       
                       // Force fallback based on assistant type
                       if (!found) {
-                        if (selectedAssistant === 'cursor' && selectedModel === 'gpt-5') {
-                          return 'GPT-5';
-                        } else if (selectedAssistant === 'claude' && selectedModel === 'claude-sonnet-4') {
-                          return 'Claude Sonnet 4';
-                        } else if (selectedAssistant === 'codex' && selectedModel === 'gpt-5') {
-                          return 'GPT-5';
-                        } else if (selectedAssistant === 'qwen' && selectedModel === 'qwen3-coder-plus') {
-                          return 'Qwen3 Coder Plus';
-                        } else if (selectedAssistant === 'gemini' && selectedModel === 'gemini-2.5-pro') {
-                          return 'Gemini 2.5 Pro';
-                        } else if (selectedAssistant === 'gemini' && selectedModel === 'gemini-2.5-flash') {
-                          return 'Gemini 2.5 Flash';
-                        }
+                        if (selectedAssistant === 'cursor' && selectedModel === 'gpt-5') return 'GPT-5';
+                        if (selectedAssistant === 'claude' && selectedModel === 'claude-sonnet-4') return 'Claude Sonnet 4';
+                        if (selectedAssistant === 'codex' && selectedModel === 'gpt-5') return 'GPT-5';
+                        if (selectedAssistant === 'remote' && selectedModel === 'gpt-5') return 'GPT-5';
+                        if (selectedAssistant === 'qwen' && selectedModel === 'qwen3-coder-plus') return 'Qwen3 Coder Plus';
+                        if (selectedAssistant === 'gemini' && selectedModel === 'gemini-2.5-pro') return 'Gemini 2.5 Pro';
+                        if (selectedAssistant === 'gemini' && selectedModel === 'gemini-2.5-flash') return 'Gemini 2.5 Flash';
                       }
                       
                       return found?.name || 'Select Model';

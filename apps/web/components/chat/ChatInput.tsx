@@ -358,6 +358,7 @@ export default function ChatInput({
                    preferredCli === 'cursor' ? 'Cursor Agent' : 
                    preferredCli === 'qwen' ? 'Qwen Coder' :
                    preferredCli === 'gemini' ? 'Gemini CLI' :
+                   preferredCli === 'remote' ? 'Cloud AI' :
                    'Codex CLI'}
                 </span>
                 {selectedModel && (

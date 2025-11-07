@@ -1,10 +1,10 @@
 "use client";
-import { useEffect, useState, useRef, useCallback } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import { AnimatePresence } from 'framer-motion';
 import { MotionDiv, MotionH3, MotionP, MotionButton } from '../../../lib/motion';
 import { useRouter, useSearchParams } from 'next/navigation';
 import dynamic from 'next/dynamic';
-import { FaCode, FaDesktop, FaMobileAlt, FaPlay, FaStop, FaSync, FaCog, FaRocket, FaFolder, FaFolderOpen, FaFile, FaFileCode, FaCss3Alt, FaHtml5, FaJs, FaReact, FaPython, FaDocker, FaGitAlt, FaMarkdown, FaDatabase, FaPhp, FaJava, FaRust, FaVuejs, FaLock, FaHome, FaChevronUp, FaChevronRight, FaChevronDown, FaArrowLeft, FaArrowRight, FaRedo, FaDownload } from 'react-icons/fa';
+import { FaCode, FaDesktop, FaMobileAlt, FaPlay, FaStop, FaSync, FaCog, FaRocket, FaFolder, FaFolderOpen, FaFile, FaFileCode, FaCss3Alt, FaHtml5, FaJs, FaReact, FaPython, FaDocker, FaGitAlt, FaMarkdown, FaDatabase, FaPhp, FaJava, FaRust, FaVuejs, FaLock, FaHome, FaChevronUp, FaChevronRight, FaChevronDown, FaArrowLeft, FaArrowRight, FaRedo, FaDownload, FaShareAlt } from 'react-icons/fa';
 import { SiTypescript, SiGo, SiRuby, SiSvelte, SiJson, SiYaml, SiCplusplus } from 'react-icons/si';
 import { VscJson } from 'react-icons/vsc';
 import ChatLog from '../../../components/ChatLog';
@@ -193,6 +193,11 @@ export default function ChatPage({ params }: Params) {
   const [previewError, setPreviewError] = useState<{ message: string; details?: string } | null>(null);
   const [isExporting, setIsExporting] = useState(false);
   const [tree, setTree] = useState<Entry[]>([]);
+  const [isShareMenuOpen, setIsShareMenuOpen] = useState(false);
+  const [shareFeedback, setShareFeedback] = useState<{ message: string; tone: 'info' | 'success' | 'error' } | null>(null);
+  const shareButtonRef = useRef<HTMLButtonElement | null>(null);
+  const shareMenuRef = useRef<HTMLDivElement | null>(null);
+  const shareFeedbackTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -206,6 +211,50 @@ export default function ChatPage({ params }: Params) {
       setCustomPreviewUrl(null);
     }
   }, [projectId]);
+  useEffect(() => {
+    if (!isShareMenuOpen) {
+      if (shareFeedbackTimeoutRef.current) {
+        clearTimeout(shareFeedbackTimeoutRef.current);
+        shareFeedbackTimeoutRef.current = null;
+      }
+      setShareFeedback(null);
+      return;
+    }
+
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (
+        shareMenuRef.current &&
+        !shareMenuRef.current.contains(target) &&
+        shareButtonRef.current &&
+        !shareButtonRef.current.contains(target)
+      ) {
+        setIsShareMenuOpen(false);
+      }
+    };
+
+    const handleEscape = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsShareMenuOpen(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleEscape);
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleEscape);
+    };
+  }, [isShareMenuOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (shareFeedbackTimeoutRef.current) {
+        clearTimeout(shareFeedbackTimeoutRef.current);
+      }
+    };
+  }, []);
   const [content, setContent] = useState<string>('');
   const [selectedFile, setSelectedFile] = useState<string>('');
   const [currentPath, setCurrentPath] = useState<string>('.');
@@ -219,6 +268,12 @@ export default function ChatPage({ params }: Params) {
   const [showGlobalSettings, setShowGlobalSettings] = useState(false);
   const [uploadedImages, setUploadedImages] = useState<{name: string, url: string, base64: string}[]>([]);
   const [isInitializing, setIsInitializing] = useState(true);
+
+  useEffect(() => {
+    if (!showPreview) {
+      setIsShareMenuOpen(false);
+    }
+  }, [showPreview, setIsShareMenuOpen]);
   // Initialize states with default values, will be loaded from localStorage in useEffect
   const [hasInitialPrompt, setHasInitialPrompt] = useState<boolean>(false);
   const [agentWorkComplete, setAgentWorkComplete] = useState<boolean>(false);
@@ -243,6 +298,47 @@ export default function ChatPage({ params }: Params) {
   const [currentRoute, setCurrentRoute] = useState<string>('/');
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isFileUpdating, setIsFileUpdating] = useState(false);
+  const shareableUrl = useMemo(() => {
+    if (publishedUrl) return publishedUrl;
+    if (customPreviewUrl) return customPreviewUrl;
+    if (previewUrl) return previewUrl;
+    return '';
+  }, [publishedUrl, customPreviewUrl, previewUrl]);
+
+  const handleShareFeedback = useCallback((message: string, tone: 'info' | 'success' | 'error') => {
+    setShareFeedback({ message, tone });
+    if (shareFeedbackTimeoutRef.current) {
+      clearTimeout(shareFeedbackTimeoutRef.current);
+    }
+    shareFeedbackTimeoutRef.current = setTimeout(() => {
+      setShareFeedback(null);
+    }, 2400);
+  }, []);
+
+  const handleCopyShareLink = useCallback(async () => {
+    if (!shareableUrl) {
+      handleShareFeedback('Start preview or set a custom URL to share.', 'info');
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(shareableUrl);
+      handleShareFeedback('Link copied to clipboard', 'success');
+    } catch (error) {
+      console.error('Failed to copy share link', error);
+      handleShareFeedback('Unable to copy link', 'error');
+    }
+  }, [handleShareFeedback, shareableUrl]);
+
+  const handleOpenShareLink = useCallback(() => {
+    if (!shareableUrl) {
+      handleShareFeedback('Start preview or set a custom URL to share.', 'info');
+      return;
+    }
+
+    window.open(shareableUrl, '_blank', 'noopener,noreferrer');
+    setIsShareMenuOpen(false);
+  }, [handleShareFeedback, shareableUrl]);
 
   // Guarded trigger that can be called from multiple places safely
   const triggerInitialPromptIfNeeded = useCallback(() => {
@@ -995,66 +1091,7 @@ export default function ChatPage({ params }: Params) {
   async function loadProjectInfo() {
     try {
       const r = await fetch(`${API_BASE}/api/projects/${projectId}`);
-      if (r.ok) {
-        const project = await r.json();
-        console.log('📋 Loading project info:', {
-          preferred_cli: project.preferred_cli,
-          selected_model: project.selected_model
-        });
-        setProjectName(project.name || `Project ${projectId.slice(0, 8)}`);
-        
-        // Set CLI and model from project settings if available
-        if (project.preferred_cli) {
-          console.log('✅ Setting CLI from project:', project.preferred_cli);
-          setPreferredCli(project.preferred_cli);
-        }
-        if (project.selected_model) {
-          console.log('✅ Setting model from project:', project.selected_model);
-          setSelectedModel(project.selected_model);
-        }
-        // Determine if we should follow global defaults (no project-specific prefs)
-        const followGlobal = !project.preferred_cli && !project.selected_model;
-        setUsingGlobalDefaults(followGlobal);
-        setProjectDescription(project.description || '');
-        
-        // Return project settings for use in loadSettings
-        return {
-          cli: project.preferred_cli,
-          model: project.selected_model
-        };
-        
-        // Check if project has initial prompt
-        if (project.initial_prompt) {
-          setHasInitialPrompt(true);
-          localStorage.setItem(`project_${projectId}_hasInitialPrompt`, 'true');
-          // Don't start preview automatically if there's an initial prompt
-        } else {
-          setHasInitialPrompt(false);
-          localStorage.setItem(`project_${projectId}_hasInitialPrompt`, 'false');
-        }
-
-        // Check initial project status and handle initial prompt
-        const initialPromptFromUrl = searchParams?.get('initial_prompt');
-        
-        if (project.status === 'initializing') {
-          setProjectStatus('initializing');
-          setIsInitializing(true);
-          // initializing 상태면 WebSocket에서 active로 변경될 때까지 대기
-        } else {
-          setProjectStatus('active');
-          setIsInitializing(false);
-          
-          // 프로젝트가 이미 active 상태면 즉시 의존성 설치 시작
-          startDependencyInstallation();
-          
-          // Initial prompt: trigger once with shared guard (handles active-on-load case)
-          triggerInitialPromptIfNeeded();
-        }
-        
-        // Always load the file tree after getting project info
-        await loadTree('.')
-      } else {
-        // If API fails, use a fallback name
+      if (!r.ok) {
         setProjectName(`Project ${projectId.slice(0, 8)}`);
         setProjectDescription('');
         setHasInitialPrompt(false);
@@ -1062,11 +1099,56 @@ export default function ChatPage({ params }: Params) {
         setProjectStatus('active');
         setIsInitializing(false);
         setUsingGlobalDefaults(true);
-        return {}; // Return empty object if no project found
+        return {};
       }
+
+      const project = await r.json();
+      console.log('📋 Loading project info:', {
+        preferred_cli: project.preferred_cli,
+        selected_model: project.selected_model
+      });
+
+      const projectSettings = {
+        cli: project.preferred_cli,
+        model: project.selected_model
+      };
+
+      setProjectName(project.name || `Project ${projectId.slice(0, 8)}`);
+      setProjectDescription(project.description || '');
+
+      if (project.preferred_cli) {
+        console.log('✅ Setting CLI from project:', project.preferred_cli);
+        setPreferredCli(project.preferred_cli);
+      }
+      if (project.selected_model) {
+        console.log('✅ Setting model from project:', project.selected_model);
+        setSelectedModel(project.selected_model);
+      }
+      const followGlobal = !project.preferred_cli && !project.selected_model;
+      setUsingGlobalDefaults(followGlobal);
+
+      if (project.initial_prompt) {
+        setHasInitialPrompt(true);
+        localStorage.setItem(`project_${projectId}_hasInitialPrompt`, 'true');
+      } else {
+        setHasInitialPrompt(false);
+        localStorage.setItem(`project_${projectId}_hasInitialPrompt`, 'false');
+      }
+
+      if (project.status === 'initializing') {
+        setProjectStatus('initializing');
+        setIsInitializing(true);
+      } else {
+        setProjectStatus('active');
+        setIsInitializing(false);
+        startDependencyInstallation();
+        triggerInitialPromptIfNeeded();
+      }
+
+      await loadTree('.');
+      return projectSettings;
     } catch (error) {
       console.error('Failed to load project info:', error);
-      // If network error, use a fallback name
       setProjectName(`Project ${projectId.slice(0, 8)}`);
       setProjectDescription('');
       setHasInitialPrompt(false);
@@ -1074,7 +1156,7 @@ export default function ChatPage({ params }: Params) {
       setProjectStatus('active');
       setIsInitializing(false);
       setUsingGlobalDefaults(true);
-      return {}; // Return empty object on error
+      return {};
     }
   }
 
@@ -1402,9 +1484,6 @@ export default function ChatPage({ params }: Params) {
       
       // Then load global settings as fallback, passing project settings
       await loadSettings(projectSettings);
-      
-      // Always load the file tree regardless of project status
-      await loadTree('.');
       
       // Only set initializing to false if project is active
       if (projectStatus === 'active') {
@@ -1774,6 +1853,81 @@ export default function ChatPage({ params }: Params) {
                 </div>
                 
                 <div className="flex items-center gap-2">
+                  {/* Share Button */}
+                  <div className="relative">
+                    <button
+                      type="button"
+                      ref={shareButtonRef}
+                      data-state={isShareMenuOpen ? 'open' : 'closed'}
+                      className="inline-flex items-center justify-center whitespace-nowrap text-sm font-medium transition-colors disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 border border-input bg-background hover:bg-accent hover:text-accent-foreground rounded-md px-3 gap-2 h-[32px]"
+                      onClick={() => setIsShareMenuOpen((prev) => !prev)}
+                    >
+                      <FaShareAlt />
+                      Share
+                    </button>
+                    {isShareMenuOpen && (
+                      <div
+                        ref={shareMenuRef}
+                        className="absolute right-0 z-50 mt-2 w-72 origin-top-right rounded-lg border border-gray-200 bg-white p-4 shadow-xl dark:border-gray-700 dark:bg-gray-900"
+                      >
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-gray-900 dark:text-white">Share preview access</p>
+                          <button
+                            type="button"
+                            className="text-xs text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                            onClick={() => setIsShareMenuOpen(false)}
+                          >
+                            Close
+                          </button>
+                        </div>
+                        <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                          Use a published deployment or custom preview URL to get a shareable link.
+                        </p>
+                        <div className="mt-3 flex items-center gap-2">
+                          <input
+                            readOnly
+                            value={shareableUrl}
+                            placeholder="No shareable link available"
+                            className="flex-1 h-9 rounded-md border border-gray-300 bg-gray-50 px-2 text-sm text-gray-700 focus:outline-none dark:border-gray-700 dark:bg-gray-800 dark:text-gray-200"
+                          />
+                          <button
+                            type="button"
+                            onClick={handleCopyShareLink}
+                            className="h-9 rounded-md border border-gray-300 bg-white px-3 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-100 dark:hover:bg-gray-700"
+                          >
+                            Copy
+                          </button>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={handleOpenShareLink}
+                          className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-md bg-indigo-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-indigo-700 disabled:cursor-not-allowed disabled:bg-gray-300 disabled:text-gray-600 dark:bg-indigo-500 dark:hover:bg-indigo-600 dark:disabled:bg-gray-700 dark:disabled:text-gray-400"
+                          disabled={!shareableUrl}
+                        >
+                          Open preview
+                        </button>
+                        {!shareableUrl && (
+                          <p className="mt-2 text-xs text-amber-600 dark:text-amber-300">
+                            Start the preview server or apply a custom URL above to enable sharing.
+                          </p>
+                        )}
+                        {shareFeedback && (
+                          <p
+                            className={`mt-2 text-xs ${
+                              shareFeedback.tone === 'success'
+                                ? 'text-emerald-600 dark:text-emerald-400'
+                                : shareFeedback.tone === 'error'
+                                ? 'text-rose-600 dark:text-rose-400'
+                                : 'text-gray-500 dark:text-gray-400'
+                            }`}
+                          >
+                            {shareFeedback.message}
+                          </p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
                   {/* Settings Button */}
                   <button 
                     onClick={() => setShowGlobalSettings(true)}
@@ -2239,58 +2393,75 @@ export default function ChatPage({ params }: Params) {
                           </>
                         ) : (
                           <>
-                            <div
-                              onClick={!isRunning && !isStartingPreview ? start : undefined}
-                              className={`w-40 h-40 mx-auto mb-6 relative ${!isRunning && !isStartingPreview ? 'cursor-pointer group' : ''}`}
-                            >
-                              {/* VibeAny Symbol with rotating animation when starting */}
-                              <MotionDiv
-                                className="w-full h-full"
-                                animate={isStartingPreview ? { rotate: 360 } : {}}
-                                transition={{ duration: 6, repeat: isStartingPreview ? Infinity : 0, ease: "linear" }}
-                              >
-                                <div 
-                                  className="w-full h-full"
-                                  style={{
-                                    backgroundColor: assistantBrandColors[preferredCli] || assistantBrandColors.claude,
-                                    mask: 'url(/Symbol_white.png) no-repeat center/contain',
-                                    WebkitMask: 'url(/Symbol_white.png) no-repeat center/contain',
-                                    opacity: 0.9
-                                  }}
-                                />
-                              </MotionDiv>
-                              
-                              {/* Icon in Center - Play or Loading */}
-                              <div className="absolute inset-0 flex items-center justify-center">
-                                {isStartingPreview ? (
-                                  <div 
-                                    className="w-14 h-14 border-4 border-t-transparent rounded-full animate-spin"
-                                    style={{
-                                      borderColor: assistantBrandColors[preferredCli] || assistantBrandColors.claude,
-                                      borderTopColor: 'transparent'
-                                    }}
+                            {isStartingPreview ? (
+                              <div className="flex flex-col items-center space-y-8 max-w-md text-center px-4 mx-auto">
+                                <div className="relative">
+                                  <div className="w-16 h-16 rounded-full bg-orange-500/20 backdrop-blur-sm flex items-center justify-center">
+                                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-500" />
+                                  </div>
+                                  <div className="absolute top-0 left-0 w-16 h-16 rounded-full bg-orange-400/20 animate-ping" />
+                                  <div
+                                    className="absolute top-2 left-2 w-12 h-12 rounded-full bg-orange-300/10 animate-ping"
+                                    style={{ animationDelay: "0.2s" }}
                                   />
-                                ) : (
-                                  <MotionDiv
-                                    className="flex items-center justify-center"
-                                    whileHover={{ scale: 1.2 }}
-                                    whileTap={{ scale: 0.9 }}
-                                  >
-                                    <FaPlay 
-                                      size={32}
-                                    />
-                                  </MotionDiv>
-                                )}
+                                </div>
+                                <div className="space-y-2">
+                                  <h2 className="text-2xl font-medium tracking-tight text-slate-700 dark:text-slate-100">
+                                    Creating Your App
+                                  </h2>
+                                  <p className="text-sm font-light text-teal-700/60 dark:text-teal-300/70 tracking-wide">
+                                    This might take a few minutes...
+                                  </p>
+                                </div>
+                                <div className="text-base text-teal-600/80 dark:text-teal-300/80 font-light tracking-wide">
+                                  <div className="flex items-center h-[1.5em] sm:h-[2em]">
+                                    <div className="text-slate-700 dark:text-slate-100 tracking-normal" style={{ opacity: 1 }}>
+                                      thinking...
+                                      <span
+                                        className="inline-block w-[0.5em] sm:w-[0.55em] h-[1em] sm:h-[1.1em] bg-slate-600 dark:bg-slate-200 ml-[2px] align-[-0.1em] sm:align-[-0.15em] animate-pulse"
+                                        style={{ opacity: 0.32 }}
+                                      />
+                                    </div>
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                            
-                            <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                              Preview Not Running
-                            </h3>
-                            
-                            <p className="text-gray-600 dark:text-gray-400 max-w-lg mx-auto">
-                              Start your development server to see live changes
-                            </p>
+                            ) : (
+                              <>
+                                <div
+                                  onClick={!isRunning ? start : undefined}
+                                  className={`w-40 h-40 mx-auto mb-6 relative ${!isRunning ? 'cursor-pointer group' : ''}`}
+                                >
+                                  <div className="w-full h-full">
+                                    <div
+                                      className="w-full h-full"
+                                      style={{
+                                        backgroundColor: assistantBrandColors[preferredCli] || assistantBrandColors.claude,
+                                        mask: 'url(/Symbol_white.png) no-repeat center/contain',
+                                        WebkitMask: 'url(/Symbol_white.png) no-repeat center/contain',
+                                        opacity: 0.9,
+                                      }}
+                                    />
+                                  </div>
+                                  <div className="absolute inset-0 flex items-center justify-center">
+                                    <MotionDiv
+                                      className="flex items-center justify-center"
+                                      whileHover={{ scale: 1.2 }}
+                                      whileTap={{ scale: 0.9 }}
+                                    >
+                                      <FaPlay size={32} />
+                                    </MotionDiv>
+                                  </div>
+                                </div>
+
+                                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3">
+                                  Preview Not Running
+                                </h3>
+
+                                <p className="text-gray-600 dark:text-gray-400 max-w-lg mx-auto">
+                                  Start your development server to see live changes
+                                </p>
+                              </>
+                            )}
                           </>
                         )}
                       </MotionDiv>
