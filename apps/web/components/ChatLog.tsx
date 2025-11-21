@@ -135,7 +135,7 @@ interface ActiveSession {
 interface ChatLogProps {
   projectId: string;
   onSessionStatusChange?: (isRunning: boolean) => void;
-  onProjectStatusUpdate?: (status: string, message?: string) => void;
+  onProjectStatusUpdate?: (status: string, message?: string, payload?: Record<string, any>) => void;
   startRequest?: (requestId: string) => void;
   completeRequest?: (requestId: string, isSuccessful: boolean, errorMessage?: string) => void;
   onPreviewEvent?: (event: any) => void;
@@ -191,7 +191,7 @@ export default function ChatLog({ projectId, onSessionStatusChange, onProjectSta
       
       // Handle project status updates
       if (status === 'project_status' && data) {
-        onProjectStatusUpdate?.(data.status, data.message);
+        onProjectStatusUpdate?.(data.status, data.message, data);
       }
       
       // Handle session completion

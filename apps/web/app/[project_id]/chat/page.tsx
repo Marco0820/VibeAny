@@ -1294,7 +1294,11 @@ export default function ChatPage({ params }: Params) {
 
 
   // Handle project status updates via callback from ChatLog
-  const handleProjectStatusUpdate = (status: string, message?: string) => {
+  const handleProjectStatusUpdate = (
+    status: string,
+    message?: string,
+    payload?: { preview_url?: string; [key: string]: unknown }
+  ) => {
     const previousStatus = projectStatus;
     
     // 상태가 같다면 무시 (중복 방지)
@@ -1305,6 +1309,20 @@ export default function ChatPage({ params }: Params) {
     setProjectStatus(status as ProjectStatus);
     if (message) {
       setInitializationMessage(message);
+    }
+
+    // Automatically surface preview URL pushed from backend so users don't have to paste it manually
+    if (payload?.preview_url) {
+      const url = payload.preview_url;
+      setPreviewUrl(url);
+      setPreviewError(null);
+      setShowPreview(true);
+      setPreviewInitializationMessage('Preview ready!');
+      setCurrentRoute('/');
+      // Populate input only when the user hasn't specified a custom URL
+      if (!customPreviewUrl) {
+        setCustomPreviewInput(url);
+      }
     }
     
     // If project becomes active, stop showing loading UI
